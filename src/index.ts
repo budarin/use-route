@@ -88,7 +88,9 @@ function parseParams(pathname: string, routePattern?: string): Record<string, st
     // Ветка RegExp с именованными группами
     const re = compiled as RegExp;
     const m = pathname.match(re);
+
     if (!m || !m.groups) return {};
+
     return m.groups as Record<string, string>;
 }
 
