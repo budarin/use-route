@@ -10,6 +10,38 @@ import type {
 import { getRouterConfig } from './types';
 import { useSyncExternalStore, useCallback, useMemo } from 'react';
 
+// Утилита для проверки браузерного окружения
+const isBrowser = typeof window !== 'undefined';
+
+// Валидация URL: разрешаем только http://, https:// и относительные пути
+function isValidUrl(url: string): boolean {
+    if (!url || typeof url !== 'string') return false;
+
+    // Относительные пути всегда валидны
+    if (url.startsWith('/') || !url.includes(':')) return true;
+
+    // Абсолютные URL должны начинаться с http:// или https://
+    try {
+        const parsed = new URL(url);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
+
+// Создание RegExp из паттерна роута
+function createRouteRegExp(pattern: string): RegExp {
+    return new RegExp('^' + pattern.replace(/:(\w+)/g, '(?<$1>[^/]+)') + '$');
+}
+
+// Проверка соответствия паттерна pathname
+function testPattern(compiled: URLPattern | RegExp, pathname: string): boolean {
+    if (compiled instanceof URLPattern) {
+        return compiled.test({ pathname });
+    }
+    return (compiled as RegExp).test(pathname);
+}
+
 // Подписка на изменения навигации (navigate + currententrychange)[web:225][web:220]
 function subscribeNavigation(navigation: Navigation) {
     return (callback: () => void) => {
@@ -32,12 +64,10 @@ function getCompiledPattern(pattern: string): URLPattern | RegExp {
             try {
                 PATTERN_CACHE.set(pattern, new URLPattern({ pathname: pattern }));
             } catch {
-                const re = new RegExp('^' + pattern.replace(/:(\w+)/g, '(?<$1>[^/]+)') + '$');
-                PATTERN_CACHE.set(pattern, re);
+                PATTERN_CACHE.set(pattern, createRouteRegExp(pattern));
             }
         } else {
-            const re = new RegExp('^' + pattern.replace(/:(\w+)/g, '(?<$1>[^/]+)') + '$');
-            PATTERN_CACHE.set(pattern, re);
+            PATTERN_CACHE.set(pattern, createRouteRegExp(pattern));
         }
     }
     return PATTERN_CACHE.get(pattern)!;
@@ -163,16 +193,23 @@ export function useRouter(knownRoutes?: KnownRoutes): UseRouterReturn {
         _entriesKeys: string[];
     } = useMemo(() => {
         const currentEntry = navigation?.currentEntry ?? null;
-        const urlStr =
-            currentEntry?.url ?? (typeof window !== 'undefined' ? window.location.href : '/');
+        const urlStr = currentEntry?.url ?? (isBrowser ? window.location.href : '/');
 
         let parsed = urlCache.get(urlStr);
         if (!parsed) {
-            parsed = new URL(
-                urlStr,
-                typeof window !== 'undefined' ? window.location.origin : 'http://localhost'
-            );
-            urlCache.set(urlStr, parsed);
+            try {
+                parsed = new URL(urlStr, isBrowser ? window.location.origin : 'http://localhost');
+                urlCache.set(urlStr, parsed);
+            } catch (error) {
+                // Если URL невалидный, используем fallback
+                console.warn('[useRouter] Invalid URL:', urlStr, error);
+                try {
+                    parsed = new URL('/', isBrowser ? window.location.origin : 'http://localhost');
+                } catch {
+                    // Последний fallback
+                    parsed = new URL('http://localhost/');
+                }
+            }
         }
 
         const pathname = parsed.pathname;
@@ -182,16 +219,9 @@ export function useRouter(knownRoutes?: KnownRoutes): UseRouterReturn {
         if (knownRoutes) {
             for (const pattern of Object.values(knownRoutes)) {
                 const compiled = getCompiledPattern(pattern);
-                if (compiled instanceof URLPattern) {
-                    if (compiled.test({ pathname })) {
-                        matchedPattern = pattern;
-                        break;
-                    }
-                } else {
-                    if ((compiled as RegExp).test(pathname)) {
-                        matchedPattern = pattern;
-                        break;
-                    }
+                if (testPattern(compiled, pathname)) {
+                    matchedPattern = pattern;
+                    break;
                 }
             }
         }
@@ -222,13 +252,23 @@ export function useRouter(knownRoutes?: KnownRoutes): UseRouterReturn {
         async (to: string | URL, options: NavigateOptions = {}): Promise<void> => {
             const targetUrl = typeof to === 'string' ? to : to.toString();
 
+            // Валидация URL
+            if (!isValidUrl(targetUrl)) {
+                console.warn('[useRouter] Invalid URL rejected:', targetUrl);
+                return;
+            }
+
             if (!navigation) {
                 // Fallback на History API
-                if (typeof window !== 'undefined') {
-                    if (options.replace) {
-                        window.history.replaceState(options.state, '', targetUrl);
-                    } else {
-                        window.history.pushState(options.state, '', targetUrl);
+                if (isBrowser) {
+                    try {
+                        if (options.replace) {
+                            window.history.replaceState(options.state, '', targetUrl);
+                        } else {
+                            window.history.pushState(options.state, '', targetUrl);
+                        }
+                    } catch (error) {
+                        console.error('[useRouter] History API error:', error);
                     }
                 }
                 return;
@@ -243,33 +283,62 @@ export function useRouter(knownRoutes?: KnownRoutes): UseRouterReturn {
                 navOptions.history = 'auto';
             }
 
-            await navigation.navigate(targetUrl, navOptions);
+            try {
+                await navigation.navigate(targetUrl, navOptions);
+            } catch (error) {
+                console.error('[useRouter] Navigation error:', error);
+                // Пробуем fallback на History API
+                if (isBrowser) {
+                    try {
+                        if (options.replace) {
+                            window.history.replaceState(options.state, '', targetUrl);
+                        } else {
+                            window.history.pushState(options.state, '', targetUrl);
+                        }
+                    } catch (fallbackError) {
+                        console.error('[useRouter] History API fallback error:', fallbackError);
+                    }
+                }
+            }
         },
         [navigation]
     );
 
     const back = useCallback(() => {
-        if (navigation) {
-            navigation.back();
-        } else if (typeof window !== 'undefined') {
-            window.history.back();
+        try {
+            if (navigation) {
+                navigation.back();
+            } else if (isBrowser) {
+                window.history.back();
+            }
+        } catch (error) {
+            console.error('[useRouter] Back navigation error:', error);
         }
     }, [navigation]);
 
     const forward = useCallback(() => {
-        if (navigation) {
-            navigation.forward();
-        } else if (typeof window !== 'undefined') {
-            window.history.forward();
+        try {
+            if (navigation) {
+                navigation.forward();
+            } else if (isBrowser) {
+                window.history.forward();
+            }
+        } catch (error) {
+            console.error('[useRouter] Forward navigation error:', error);
         }
     }, [navigation]);
 
     const canGoBack = useCallback(
         (steps: number = 1): boolean => {
+            // Валидация входных данных
+            if (!Number.isFinite(steps) || steps < 0 || steps > Number.MAX_SAFE_INTEGER) {
+                return false;
+            }
+
             if (!navigation || routerState._entriesKeys.length === 0) {
                 // Для History API точной информации нет — считаем, что 1 шаг ок,
                 // а больше уже зависит от history.length (грубая эвристика).
-                if (typeof window === 'undefined') return false;
+                if (!isBrowser) return false;
                 return steps <= window.history.length - 1;
             }
             const idx = routerState.historyIndex;
@@ -281,8 +350,13 @@ export function useRouter(knownRoutes?: KnownRoutes): UseRouterReturn {
 
     const canGoForward = useCallback(
         (steps: number = 1): boolean => {
+            // Валидация входных данных
+            if (!Number.isFinite(steps) || steps < 0 || steps > Number.MAX_SAFE_INTEGER) {
+                return false;
+            }
+
             if (!navigation || routerState._entriesKeys.length === 0) {
-                if (typeof window === 'undefined') return false;
+                if (!isBrowser) return false;
                 // Для обычного History API вперёд проверить нельзя корректно.
                 return false;
             }
@@ -295,20 +369,29 @@ export function useRouter(knownRoutes?: KnownRoutes): UseRouterReturn {
 
     const go = useCallback(
         (delta: number): void => {
-            if (delta === 0) return;
+            // Валидация входных данных
+            if (!Number.isFinite(delta) || delta === 0) return;
+            if (delta > Number.MAX_SAFE_INTEGER || delta < -Number.MAX_SAFE_INTEGER) {
+                console.warn('[useRouter] Delta value too large:', delta);
+                return;
+            }
 
-            if (navigation && routerState._entriesKeys.length > 0) {
-                const idx = routerState.historyIndex;
-                if (idx === -1) return;
-                const targetIdx = idx + delta;
-                if (targetIdx < 0 || targetIdx >= routerState._entriesKeys.length) {
-                    return;
+            try {
+                if (navigation && routerState._entriesKeys.length > 0) {
+                    const idx = routerState.historyIndex;
+                    if (idx === -1) return;
+                    const targetIdx = idx + delta;
+                    if (targetIdx < 0 || targetIdx >= routerState._entriesKeys.length) {
+                        return;
+                    }
+                    const targetKey = routerState._entriesKeys[targetIdx];
+                    if (targetKey === undefined) return;
+                    navigation.traverseTo(targetKey);
+                } else if (isBrowser) {
+                    window.history.go(delta);
                 }
-                const targetKey = routerState._entriesKeys[targetIdx];
-                if (targetKey === undefined) return;
-                navigation.traverseTo(targetKey);
-            } else if (typeof window !== 'undefined') {
-                window.history.go(delta);
+            } catch (error) {
+                console.error('[useRouter] Go navigation error:', error);
             }
         },
         [navigation, routerState._entriesKeys, routerState.historyIndex]
