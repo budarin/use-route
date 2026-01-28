@@ -73,6 +73,39 @@ function getCompiledPattern(pattern: string): URLPattern | RegExp {
     return PATTERN_CACHE.get(pattern)!;
 }
 
+// Общий LRU-кэш URL → разобранный URL (один на модуль, лимит из configureRouter)[web:133]
+const URL_CACHE = new Map<string, URL>();
+
+function getCachedParsedUrl(urlStr: string): URL {
+    const cache = URL_CACHE;
+    const existing = cache.get(urlStr);
+    if (existing !== undefined) {
+        cache.delete(urlStr);
+        cache.set(urlStr, existing);
+        return existing;
+    }
+    const base = isBrowser ? window.location.origin : 'http://localhost';
+    try {
+        const parsed = new URL(urlStr, base);
+        const limit = getRouterConfig().urlCacheLimit;
+        if (cache.has(urlStr)) {
+            cache.delete(urlStr);
+        } else if (cache.size >= limit) {
+            const firstKey = cache.keys().next().value;
+            if (firstKey !== undefined) cache.delete(firstKey);
+        }
+        cache.set(urlStr, parsed);
+        return parsed;
+    } catch (error) {
+        console.warn('[useRouter] Invalid URL:', urlStr, error);
+        try {
+            return new URL('/', base);
+        } catch {
+            return new URL('http://localhost/');
+        }
+    }
+}
+
 // Парсинг params по паттерну: '/users/:id' + '/users/123' → { id: '123' }[web:140][web:125]
 function parseParams(pathname: string, routePattern?: string): Record<string, string> {
     if (!routePattern) return {};
@@ -98,7 +131,6 @@ function parseParams(pathname: string, routePattern?: string): Record<string, st
 export { configureRouter } from './types';
 
 export function useRouter(knownRoutes?: KnownRoutes): UseRouterReturn {
-    const { urlCacheLimit } = getRouterConfig();
     const navigation: Navigation | undefined =
         typeof window !== 'undefined' && 'navigation' in window
             ? (window.navigation as Navigation)
@@ -162,58 +194,13 @@ export function useRouter(knownRoutes?: KnownRoutes): UseRouterReturn {
         return map;
     }, [rawState.entriesKeys]);
 
-    // LRU кэш URL → разобранный URL с настраиваемым лимитом[web:133]
-    const urlCache = useMemo(() => {
-        const cache = new Map<string, URL>();
-        return {
-            get: (key: string): URL | undefined => {
-                const value = cache.get(key);
-                if (value !== undefined) {
-                    // Перемещаем в конец (LRU)
-                    cache.delete(key);
-                    cache.set(key, value);
-                }
-                return value;
-            },
-            set: (key: string, value: URL): void => {
-                if (cache.has(key)) {
-                    cache.delete(key);
-                } else if (cache.size >= urlCacheLimit) {
-                    // Удаляем самый старый элемент (первый в Map)
-                    const firstKey = cache.keys().next().value;
-                    if (firstKey !== undefined) {
-                        cache.delete(firstKey);
-                    }
-                }
-                cache.set(key, value);
-            },
-        };
-    }, [urlCacheLimit]);
-
     // 2. Производное состояние роутера (мемоизировано)
     const routerState: RouterState & {
         _entriesKeys: string[];
     } = useMemo(() => {
         const currentEntry = navigation?.currentEntry ?? null;
         const urlStr = currentEntry?.url ?? (isBrowser ? window.location.href : '/');
-
-        let parsed = urlCache.get(urlStr);
-        if (!parsed) {
-            try {
-                parsed = new URL(urlStr, isBrowser ? window.location.origin : 'http://localhost');
-                urlCache.set(urlStr, parsed);
-            } catch (error) {
-                // Если URL невалидный, используем fallback
-                console.warn('[useRouter] Invalid URL:', urlStr, error);
-                try {
-                    parsed = new URL('/', isBrowser ? window.location.origin : 'http://localhost');
-                } catch {
-                    // Последний fallback
-                    parsed = new URL('http://localhost/');
-                }
-            }
-        }
-
+        const parsed = getCachedParsedUrl(urlStr);
         const pathname = parsed.pathname;
 
         // Поиск подходящего паттерна среди knownRoutes (если передан)
@@ -240,14 +227,7 @@ export function useRouter(knownRoutes?: KnownRoutes): UseRouterReturn {
             historyIndex,
             _entriesKeys: rawState.entriesKeys,
         };
-    }, [
-        navigation,
-        rawState.currentKey,
-        rawState.entriesKeys,
-        knownRoutes,
-        urlCache,
-        keyToIndexMap,
-    ]);
+    }, [navigation, rawState.currentKey, rawState.entriesKeys, knownRoutes, keyToIndexMap]);
 
     // 3. Навигационные операции[web:217][web:219]
     const navigate = useCallback(
@@ -372,6 +352,10 @@ export function useRouter(knownRoutes?: KnownRoutes): UseRouterReturn {
     const go = useCallback(
         (delta: number): void => {
             // Валидация входных данных
+            if (delta === Infinity || delta === -Infinity) {
+                console.warn('[useRouter] Delta value too large:', delta);
+                return;
+            }
             if (!Number.isFinite(delta) || delta === 0) return;
             if (delta > Number.MAX_SAFE_INTEGER || delta < -Number.MAX_SAFE_INTEGER) {
                 console.warn('[useRouter] Delta value too large:', delta);

@@ -323,11 +323,13 @@ describe('useRouter', () => {
             const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
             const pushStateSpy = vi.spyOn(window.history, 'pushState');
 
-            // Создаем мок navigation API с ошибкой
+            // Создаем мок navigation API с ошибкой (минимальный контракт для useSyncExternalStore)
             const mockNavigation = {
                 navigate: vi.fn().mockRejectedValue(new Error('Navigation failed')),
-                currentEntry: null,
-                entries: [],
+                addEventListener: vi.fn(),
+                removeEventListener: vi.fn(),
+                currentEntry: { key: 'key0' },
+                entries: [{ key: 'key0' }],
                 canGoBack: false,
                 canGoForward: false,
             };
