@@ -1,7 +1,6 @@
 import type {
     Pathname,
     UrlString,
-    Navigation,
     RouterState,
     PathPattern,
     RouteParams,
@@ -9,8 +8,8 @@ import type {
     NavigateOptions,
     UseRouterReturn,
     NavigationEntryKey,
-    NavigationNavigateOptions,
 } from './types';
+import type { Navigation, NavigationNavigateOptions } from './native-api-types';
 
 import { getRouterConfig, getLogger } from './types';
 import { useSyncExternalStore, useCallback, useMemo } from 'react';
