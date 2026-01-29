@@ -5,7 +5,7 @@
 import { useRouter } from '@budarin/react-router';
 
 export function PushReplaceExample() {
-    const { navigate, pathname } = useRouter();
+    const { navigate, replace, pathname } = useRouter();
 
     return (
         <div>
@@ -14,7 +14,10 @@ export function PushReplaceExample() {
                 Перейти (push) — в истории появится запись
             </button>
             <button type="button" onClick={() => navigate('/step-replace', { history: 'replace' })}>
-                Перейти (replace) — текущая запись заменится
+                Перейти (replace через navigate)
+            </button>
+            <button type="button" onClick={() => replace('/step-replace-method')}>
+                Перейти через replace() — то же, что history: 'replace'
             </button>
         </div>
     );

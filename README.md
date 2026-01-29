@@ -161,7 +161,7 @@ const { searchParams, navigate } = useRouter('/posts');
 
 // Query параметры из search params
 const page = searchParams.get('page') || '1';
-const nextPage = page + 1;
+const nextPage = Number.parseInt(page, 10) + 1;
 
 // Навигация с search params
 <button onClick={() => navigate(`/posts?page=${nextPage}`)}>
