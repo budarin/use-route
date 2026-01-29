@@ -33,16 +33,93 @@ function testPattern(compiled: URLPattern, pathname: string): boolean {
     return compiled.test({ pathname });
 }
 
-// Подписка на изменения навигации (navigate + currententrychange)[web:225][web:220]
-function subscribeNavigation(navigation: Navigation) {
-    return (callback: () => void) => {
-        navigation.addEventListener('navigate', callback);
-        navigation.addEventListener('currententrychange', callback);
-        return () => {
-            navigation.removeEventListener('navigate', callback);
-            navigation.removeEventListener('currententrychange', callback);
-        };
+// Общий store для navigation: один снимок и 2 слушателя на всё приложение (вместо 2N при N хуках)
+type NavigationSnapshot = {
+    currentKey: string;
+    canGoBackFlag: boolean;
+    canGoForwardFlag: boolean;
+    entriesKeys: string[];
+};
+
+const DEFAULT_SNAPSHOT: NavigationSnapshot = {
+    currentKey: '',
+    canGoBackFlag: false,
+    canGoForwardFlag: false,
+    entriesKeys: [],
+};
+
+function getNavigation(): Navigation | undefined {
+    return typeof window !== 'undefined' && 'navigation' in window
+        ? (window.navigation as Navigation)
+        : undefined;
+}
+
+function computeNavigationSnapshot(nav: Navigation | undefined): NavigationSnapshot {
+    if (!nav) return DEFAULT_SNAPSHOT;
+    return {
+        currentKey: nav.currentEntry?.key ?? '',
+        canGoBackFlag: !!nav.canGoBack,
+        canGoForwardFlag: !!nav.canGoForward,
+        entriesKeys: nav.entries.map((e) => e.key) ?? [],
     };
+}
+
+let sharedSnapshot: NavigationSnapshot | null = null;
+const storeCallbacks = new Set<() => void>();
+let unsubscribeNavigation: (() => void) | null = null;
+
+function subscribeToNavigation(callback: () => void): () => void {
+    storeCallbacks.add(callback);
+    if (storeCallbacks.size === 1) {
+        const nav = getNavigation();
+        if (nav) {
+            const listener = () => {
+                sharedSnapshot = computeNavigationSnapshot(nav);
+                storeCallbacks.forEach((cb) => cb());
+            };
+            nav.addEventListener('navigate', listener);
+            nav.addEventListener('currententrychange', listener);
+            unsubscribeNavigation = () => {
+                nav.removeEventListener('navigate', listener);
+                nav.removeEventListener('currententrychange', listener);
+            };
+        }
+    }
+    return () => {
+        storeCallbacks.delete(callback);
+        if (storeCallbacks.size === 0) {
+            if (unsubscribeNavigation) {
+                unsubscribeNavigation();
+                unsubscribeNavigation = null;
+            }
+            sharedSnapshot = null;
+        }
+    };
+}
+
+function getNavigationSnapshot(): NavigationSnapshot {
+    if (sharedSnapshot !== null) return sharedSnapshot;
+    const nav = getNavigation();
+    if (nav) {
+        sharedSnapshot = computeNavigationSnapshot(nav);
+        return sharedSnapshot;
+    }
+    return DEFAULT_SNAPSHOT;
+}
+
+// Один keyToIndexMap на снимок (один на все хуки при общем rawState)
+let lastEntriesKeysRef: string[] | null = null;
+let lastKeyToIndexMap: Map<string, number> | null = null;
+
+function getKeyToIndexMap(entriesKeys: string[]): Map<string, number> {
+    if (entriesKeys === lastEntriesKeysRef && lastKeyToIndexMap !== null) {
+        return lastKeyToIndexMap;
+    }
+    lastEntriesKeysRef = entriesKeys;
+    const map = new Map<string, number>();
+    entriesKeys.forEach((key, index) => map.set(key, index));
+    lastKeyToIndexMap = map;
+    return map;
 }
 
 // Кэш скомпилированных URLPattern[web:140][web:221]
@@ -115,71 +192,18 @@ export { configureRouter } from './types';
 export function clearRouterCaches(): void {
     PATTERN_CACHE.clear();
     URL_CACHE.clear();
+    lastEntriesKeysRef = null;
+    lastKeyToIndexMap = null;
 }
 
 export function useRouter(pattern?: string): UseRouterReturn {
-    const navigation: Navigation | undefined =
-        typeof window !== 'undefined' && 'navigation' in window
-            ? (window.navigation as Navigation)
-            : undefined;
-
-    // 1. useSyncExternalStore — только ключ текущей записи и флаги canGoBack/Forward[web:225][web:219]
-    // Мемоизируем getSnapshot для стабильности
-    const getSnapshot = useMemo(() => {
-        let cached: {
-            currentKey: string;
-            canGoBackFlag: boolean;
-            canGoForwardFlag: boolean;
-            entriesKeys: string[];
-        } | null = null;
-
-        return () => {
-            const currentKey = navigation?.currentEntry?.key ?? '';
-            const canGoBackFlag = !!navigation?.canGoBack;
-            const canGoForwardFlag = !!navigation?.canGoForward;
-            const entriesKeys = navigation?.entries.map((e) => e.key) ?? [];
-
-            // Возвращаем кэшированный объект, если значения не изменились
-            if (
-                cached &&
-                cached.currentKey === currentKey &&
-                cached.canGoBackFlag === canGoBackFlag &&
-                cached.canGoForwardFlag === canGoForwardFlag &&
-                cached.entriesKeys.length === entriesKeys.length &&
-                cached.entriesKeys.every((key, i) => key === entriesKeys[i])
-            ) {
-                return cached;
-            }
-
-            cached = {
-                currentKey,
-                canGoBackFlag,
-                canGoForwardFlag,
-                entriesKeys,
-            };
-            return cached;
-        };
-    }, [navigation]);
-
+    const navigation = getNavigation();
     const rawState = useSyncExternalStore(
-        navigation ? subscribeNavigation(navigation) : () => () => {},
-        getSnapshot,
-        () => ({
-            currentKey: '',
-            canGoBackFlag: false,
-            canGoForwardFlag: false,
-            entriesKeys: [] as string[],
-        })
+        subscribeToNavigation,
+        getNavigationSnapshot,
+        () => DEFAULT_SNAPSHOT
     );
-
-    // Map для O(1) поиска historyIndex
-    const keyToIndexMap = useMemo(() => {
-        const map = new Map<string, number>();
-        rawState.entriesKeys.forEach((key, index) => {
-            map.set(key, index);
-        });
-        return map;
-    }, [rawState.entriesKeys]);
+    const keyToIndexMap = getKeyToIndexMap(rawState.entriesKeys);
 
     // 2. Производное состояние роутера (мемоизировано). Один вызов getCompiledPattern на рендер.
     const routerState: RouterState & {
@@ -209,7 +233,7 @@ export function useRouter(pattern?: string): UseRouterReturn {
             matched,
             _entriesKeys: rawState.entriesKeys,
         };
-    }, [navigation, rawState.currentKey, rawState.entriesKeys, pattern, keyToIndexMap]);
+    }, [navigation, rawState.currentKey, rawState.entriesKeys, pattern]);
 
     // 3. Навигационные операции. Только Navigation API — без Navigation состояние не обновляется.
     const navigate = useCallback(
