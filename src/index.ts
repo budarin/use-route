@@ -1,15 +1,15 @@
 import type {
+    Pathname,
+    UrlString,
     Navigation,
     RouterState,
-    NavigateOptions,
-    UseRouterReturn,
-    NavigationNavigateOptions,
-    UrlString,
     PathPattern,
-    Pathname,
-    NavigationEntryKey,
     RouteParams,
     HistoryIndex,
+    NavigateOptions,
+    UseRouterReturn,
+    NavigationEntryKey,
+    NavigationNavigateOptions,
 } from './types';
 
 import { getRouterConfig, getLogger } from './types';
