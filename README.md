@@ -1,12 +1,12 @@
-# @budarin/the-router
+# @budarin/router
 
 **Минимум кода. Максимум SPA-навигации.**
 
 Инфраструктурный хук для React на **Navigation API** + **URLPattern**. Без провайдеров, без контекста, без бизнес-логики.
 
-[![npm](https://img.shields.io/npm/v/@budarin/the-router?color=cb0000)](https://www.npmjs.com/package/@budarin/the-router)
-[![npm](https://img.shields.io/npm/dt/@budarin/the-router)](https://www.npmjs.com/package/@budarin/the-router)
-[![bundle](https://img.shields.io/bundlephobia/minzip/@budarin/the-router)](https://bundlephobia.com/result?p=@budarin/the-router)
+[![npm](https://img.shields.io/npm/v/@budarin/router?color=cb0000)](https://www.npmjs.com/package/@budarin/router)
+[![npm](https://img.shields.io/npm/dt/@budarin/router)](https://www.npmjs.com/package/@budarin/router)
+[![bundle](https://img.shields.io/bundlephobia/minzip/@budarin/router)](https://bundlephobia.com/result?p=@budarin/router)
 [![GitHub](https://img.shields.io/github/license/budarin/the-router)](https://github.com/budarin/the-router)
 
 ## ✨ Особенности
@@ -24,11 +24,11 @@
 ## 🚀 Быстрый старт
 
 ```bash
-npm i @budarin/the-router
+npm i @budarin/router
 ```
 
 ```typescript
-import { useRouter, configureRouter } from '@budarin/the-router';
+import { useRouter, configureRouter } from '@budarin/router';
 
 
 function App() {
@@ -160,11 +160,11 @@ const page = searchParams.get('page') || '1';
 ## ⚙️ Установка
 
 ```bash
-npm i @budarin/the-router
+npm i @budarin/router
 
 # или
 
-yarn add @budarin/the-router
+yarn add @budarin/router
 ```
 
 TypeScript: типы включены.

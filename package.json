@@ -1,5 +1,5 @@
 {
-    "name": "the-router",
+    "name": "@budarin/router",
     "version": "1.0.0",
     "description": "",
     "main": "dist/index.js",
