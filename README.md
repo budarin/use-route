@@ -89,10 +89,18 @@ function App() {
 
 ```typescript
 {
-    replace?: boolean;
-    history?: 'push' | 'replace';
+    history?: 'push' | 'replace' | 'auto'; // по умолчанию из configureRouter или 'auto'
     state?: unknown;
 }
+```
+
+**`configureRouter(config)`** — глобальная настройка один раз при старте приложения:
+
+```typescript
+configureRouter({
+    urlCacheLimit: 50, // лимит LRU-кэша URL (по умолчанию 50)
+    defaultHistory: 'replace', // history по умолчанию для всех navigate() (по умолчанию 'auto')
+});
 ```
 
 **`pattern` (опционально):** строка-шаблон пути (нативный **URLPattern**). `:name` — захват сегмента в `params` (только буквы, цифры, `_`). `*` — wildcard, в `params` не попадает.

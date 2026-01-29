@@ -206,12 +206,6 @@ function parseParamsFromCompiled(compiled: URLPattern, pathname: string): Record
     ) as Record<string, string>;
 }
 
-// Парсинг params по строке паттерна (для внешних вызовов)
-function parseParams(pathname: string, routePattern?: string): Record<string, string> {
-    if (!routePattern) return {};
-    return parseParamsFromCompiled(getCompiledPattern(routePattern), pathname);
-}
-
 // Экспортируем configureRouter и очистку кэшей (для тестов / смены окружения)
 export { configureRouter } from './types';
 
@@ -282,14 +276,11 @@ export function useRouter(pattern?: string): UseRouterReturn {
                 return;
             }
 
-            const navOptions: NavigationNavigateOptions = { state: options.state };
-            if (options.history === 'replace' || options.replace) {
-                navOptions.history = 'replace';
-            } else if (options.history === 'push') {
-                navOptions.history = 'push';
-            } else {
-                navOptions.history = 'auto';
-            }
+            const defaultHistory = getRouterConfig().defaultHistory ?? 'auto';
+            const navOptions: NavigationNavigateOptions = {
+                state: options.state,
+                history: options.history ?? defaultHistory,
+            };
 
             try {
                 await navigation.navigate(targetUrl, navOptions);
@@ -383,7 +374,7 @@ export function useRouter(pattern?: string): UseRouterReturn {
     );
 
     const replace = useCallback(
-        (to: string | URL, state?: unknown) => navigate(to, { replace: true, state }),
+        (to: string | URL, state?: unknown) => navigate(to, { history: 'replace', state }),
         [navigate]
     );
 

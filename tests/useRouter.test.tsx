@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useRouter, clearRouterCaches } from '../src/index';
+import { useRouter, clearRouterCaches, configureRouter } from '../src/index';
 
 describe('useRouter', () => {
     let originalWindow: typeof window;
@@ -135,7 +135,7 @@ describe('useRouter', () => {
             const { result } = renderHook(() => useRouter());
 
             await act(async () => {
-                await result.current.navigate('/posts', { replace: true });
+                await result.current.navigate('/posts', { history: 'replace' });
             });
             expect(replaceStateSpy).not.toHaveBeenCalled();
 
@@ -175,6 +175,38 @@ describe('useRouter', () => {
 
             expect(result.current).toBeDefined();
             expect(result.current.pathname).toBeDefined();
+        });
+
+        it('должен использовать defaultHistory из configureRouter при вызове navigate без history', async () => {
+            configureRouter({ defaultHistory: 'replace' });
+
+            const mockNavigate = vi
+                .fn()
+                .mockResolvedValue({ committed: Promise.resolve(), finished: Promise.resolve() });
+            const mockNav = {
+                addEventListener: vi.fn(),
+                removeEventListener: vi.fn(),
+                currentEntry: { key: 'k0', url: 'http://localhost/' },
+                entries: [{ key: 'k0' }],
+                canGoBack: false,
+                canGoForward: false,
+                navigate: mockNavigate,
+            };
+            (window as any).navigation = mockNav;
+
+            const { result } = renderHook(() => useRouter());
+
+            await act(async () => {
+                await result.current.navigate('/posts');
+            });
+
+            expect(mockNavigate).toHaveBeenCalledWith(
+                '/posts',
+                expect.objectContaining({ history: 'replace' })
+            );
+
+            delete (window as any).navigation;
+            configureRouter({ defaultHistory: undefined });
         });
     });
 

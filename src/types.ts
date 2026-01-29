@@ -78,8 +78,8 @@ export interface RouterState {
 }
 
 export interface NavigateOptions {
-    replace?: boolean;
-    history?: 'push' | 'replace';
+    /** 'replace' — заменить текущую запись, 'push' — новая запись, 'auto' — по умолчанию (браузер решает). */
+    history?: 'push' | 'replace' | 'auto';
     state?: unknown;
 }
 
@@ -98,6 +98,8 @@ export interface UseRouterReturn extends RouterState {
 export interface RouterConfig {
     /** Максимальное количество URL в кэше (по умолчанию: 50) */
     urlCacheLimit: number;
+    /** Значение history по умолчанию для всех вызовов navigate() (по умолчанию: 'auto') */
+    defaultHistory?: 'push' | 'replace' | 'auto';
 }
 
 // Внутренняя конфигурация (не экспортируется)
