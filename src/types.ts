@@ -94,12 +94,25 @@ export interface UseRouterReturn extends RouterState {
     canGoForward: (steps?: number) => boolean;
 }
 
+// Логгер для роутера
+export type LoggerLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error';
+
+export interface Logger {
+    trace(...args: unknown[]): void;
+    debug(...args: unknown[]): void;
+    info(...args: unknown[]): void;
+    warn(...args: unknown[]): void;
+    error(...args: unknown[]): void;
+}
+
 // Глобальная конфигурация роутера
 export interface RouterConfig {
     /** Максимальное количество URL в кэше (по умолчанию: 50) */
     urlCacheLimit: number;
     /** Значение history по умолчанию для всех вызовов navigate() (по умолчанию: 'auto') */
     defaultHistory?: 'push' | 'replace' | 'auto';
+    /** Логгер (по умолчанию: console) */
+    logger?: Logger;
 }
 
 // Внутренняя конфигурация (не экспортируется)
@@ -120,4 +133,11 @@ export function configureRouter(config: Partial<RouterConfig>): void {
  */
 export function getRouterConfig(): RouterConfig {
     return routerConfig;
+}
+
+/**
+ * Получить логгер (config.logger ?? console)
+ */
+export function getLogger(): Logger {
+    return routerConfig.logger ?? console;
 }

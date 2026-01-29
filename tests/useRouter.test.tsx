@@ -477,4 +477,144 @@ describe('useRouter', () => {
             delete (window as any).navigation;
         });
     });
+
+    describe('Логгер', () => {
+        afterEach(() => {
+            configureRouter({ logger: undefined });
+        });
+
+        it('при переданном logger в configureRouter вызывается logger.warn при невалидном URL', async () => {
+            const logger = {
+                trace: vi.fn(),
+                debug: vi.fn(),
+                info: vi.fn(),
+                warn: vi.fn(),
+                error: vi.fn(),
+            };
+            configureRouter({ logger });
+
+            const { result } = renderHook(() => useRouter());
+
+            await act(async () => {
+                await result.current.navigate('javascript:alert("xss")');
+            });
+
+            expect(logger.warn).toHaveBeenCalledWith(
+                expect.stringContaining('Invalid URL rejected'),
+                'javascript:alert("xss")'
+            );
+            expect(logger.error).not.toHaveBeenCalled();
+        });
+
+        it('при переданном logger вызывается logger.warn при go(Infinity)', () => {
+            const logger = {
+                trace: vi.fn(),
+                debug: vi.fn(),
+                info: vi.fn(),
+                warn: vi.fn(),
+                error: vi.fn(),
+            };
+            configureRouter({ logger });
+
+            const { result } = renderHook(() => useRouter());
+
+            act(() => {
+                result.current.go(Infinity);
+            });
+
+            expect(logger.warn).toHaveBeenCalledWith(
+                expect.stringContaining('Delta value too large'),
+                Infinity
+            );
+        });
+
+        it('при переданном logger вызывается logger.error при ошибке navigate', async () => {
+            const logger = {
+                trace: vi.fn(),
+                debug: vi.fn(),
+                info: vi.fn(),
+                warn: vi.fn(),
+                error: vi.fn(),
+            };
+            configureRouter({ logger });
+
+            const mockNavigation = {
+                navigate: vi.fn().mockRejectedValue(new Error('Navigation failed')),
+                addEventListener: vi.fn(),
+                removeEventListener: vi.fn(),
+                currentEntry: { key: 'key0' },
+                entries: [{ key: 'key0' }],
+                canGoBack: false,
+                canGoForward: false,
+            };
+            (window as any).navigation = mockNavigation;
+
+            const { result } = renderHook(() => useRouter());
+
+            await act(async () => {
+                await result.current.navigate('/posts');
+            });
+
+            expect(logger.error).toHaveBeenCalledWith(
+                expect.stringContaining('Navigation error'),
+                expect.any(Error)
+            );
+
+            delete (window as any).navigation;
+        });
+
+        it('при переданном logger вызывается logger.error при ошибке back', () => {
+            const logger = {
+                trace: vi.fn(),
+                debug: vi.fn(),
+                info: vi.fn(),
+                warn: vi.fn(),
+                error: vi.fn(),
+            };
+            configureRouter({ logger });
+
+            const mockNavigation = {
+                addEventListener: vi.fn(),
+                removeEventListener: vi.fn(),
+                currentEntry: { key: 'key0' },
+                entries: [{ key: 'key0' }],
+                canGoBack: true,
+                canGoForward: false,
+                back: vi.fn().mockImplementation(() => {
+                    throw new Error('Back failed');
+                }),
+            };
+            (window as any).navigation = mockNavigation;
+
+            const { result } = renderHook(() => useRouter());
+
+            act(() => {
+                result.current.back();
+            });
+
+            expect(logger.error).toHaveBeenCalledWith(
+                expect.stringContaining('Back navigation error'),
+                expect.any(Error)
+            );
+
+            delete (window as any).navigation;
+        });
+
+        it('без logger при невалидном URL логирует через console (дефолт)', async () => {
+            const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+            const { result } = renderHook(() => useRouter());
+
+            await act(async () => {
+                await result.current.navigate('javascript:void(0)');
+            });
+
+            expect(consoleWarnSpy).toHaveBeenCalledWith(
+                expect.stringContaining('Invalid URL rejected'),
+                'javascript:void(0)'
+            );
+
+            consoleWarnSpy.mockRestore();
+        });
+    });
 });

@@ -99,9 +99,12 @@ function App() {
 ```typescript
 configureRouter({
     urlCacheLimit: 50, // лимит LRU-кэша URL (по умолчанию 50)
-    defaultHistory: 'replace', // устанавливает history по умолчанию для всех navigate()
+    defaultHistory: 'replace', // history по умолчанию для всех navigate()
+    logger: myLogger, // логгер (дефолт: console)
 });
 ```
+
+**Логгер:** тип `Logger` — объект с методами `trace`, `debug`, `info`, `warn`, `error` (как у `console`). Уровни: `LoggerLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error'`. Если не передан — используется `console`.
 
 **`pattern` (опционально):** строка-шаблон пути (нативный **URLPattern**). `:name` — захват сегмента в `params` (только буквы, цифры, `_`). `*` — wildcard, в `params` не попадает.
 

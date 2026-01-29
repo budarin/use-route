@@ -6,7 +6,7 @@ import type {
     NavigationNavigateOptions,
 } from './types';
 
-import { getRouterConfig } from './types';
+import { getRouterConfig, getLogger } from './types';
 import { useSyncExternalStore, useCallback, useMemo } from 'react';
 
 // Утилита для проверки браузерного окружения
@@ -58,7 +58,7 @@ function getCachedParsedUrl(urlStr: string): URL {
         cache.set(urlStr, parsed);
         return parsed;
     } catch (error) {
-        console.warn('[useRouter] Invalid URL:', urlStr, error);
+        getLogger().warn('[useRouter] Invalid URL:', urlStr, error);
         try {
             return new URL('/', base);
         } catch {
@@ -207,7 +207,7 @@ function parseParamsFromCompiled(compiled: URLPattern, pathname: string): Record
 }
 
 // Экспортируем configureRouter и очистку кэшей (для тестов / смены окружения)
-export { configureRouter } from './types';
+export { configureRouter, type LoggerLevel, type Logger } from './types';
 
 /** Очищает кэши паттернов и URL. Для тестов или при смене base/origin. */
 export function clearRouterCaches(): void {
@@ -268,7 +268,7 @@ export function useRouter(pattern?: string): UseRouterReturn {
             const targetUrl = typeof to === 'string' ? to : to.toString();
 
             if (!isValidUrl(targetUrl)) {
-                console.warn('[useRouter] Invalid URL rejected:', targetUrl);
+                getLogger().warn('[useRouter] Invalid URL rejected:', targetUrl);
                 return;
             }
 
@@ -285,7 +285,7 @@ export function useRouter(pattern?: string): UseRouterReturn {
             try {
                 await navigation.navigate(targetUrl, navOptions);
             } catch (error) {
-                console.error('[useRouter] Navigation error:', error);
+                getLogger().error('[useRouter] Navigation error:', error);
             }
         },
         [navigation]
@@ -295,7 +295,7 @@ export function useRouter(pattern?: string): UseRouterReturn {
         try {
             if (navigation) navigation.back();
         } catch (error) {
-            console.error('[useRouter] Back navigation error:', error);
+            getLogger().error('[useRouter] Back navigation error:', error);
         }
     }, [navigation]);
 
@@ -303,7 +303,7 @@ export function useRouter(pattern?: string): UseRouterReturn {
         try {
             if (navigation) navigation.forward();
         } catch (error) {
-            console.error('[useRouter] Forward navigation error:', error);
+            getLogger().error('[useRouter] Forward navigation error:', error);
         }
     }, [navigation]);
 
@@ -345,12 +345,12 @@ export function useRouter(pattern?: string): UseRouterReturn {
         (delta: number): void => {
             // Валидация входных данных
             if (delta === Infinity || delta === -Infinity) {
-                console.warn('[useRouter] Delta value too large:', delta);
+                getLogger().warn('[useRouter] Delta value too large:', delta);
                 return;
             }
             if (!Number.isFinite(delta) || delta === 0) return;
             if (delta > Number.MAX_SAFE_INTEGER || delta < -Number.MAX_SAFE_INTEGER) {
-                console.warn('[useRouter] Delta value too large:', delta);
+                getLogger().warn('[useRouter] Delta value too large:', delta);
                 return;
             }
 
@@ -367,7 +367,7 @@ export function useRouter(pattern?: string): UseRouterReturn {
                     navigation.traverseTo(targetKey);
                 }
             } catch (error) {
-                console.error('[useRouter] Go navigation error:', error);
+                getLogger().error('[useRouter] Go navigation error:', error);
             }
         },
         [navigation, routerState._entriesKeys, routerState.historyIndex]
