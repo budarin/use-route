@@ -99,7 +99,7 @@ function App() {
 ```typescript
 configureRouter({
     urlCacheLimit: 50, // лимит LRU-кэша URL (по умолчанию 50)
-    defaultHistory: 'replace', // history по умолчанию для всех navigate() (по умолчанию 'auto')
+    defaultHistory: 'replace', // устанавливает history по умолчанию для всех navigate()
 });
 ```
 
