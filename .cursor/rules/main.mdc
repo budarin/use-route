@@ -14,6 +14,13 @@ alwaysApply: true
 4. Questions first → answer and discuss → wait for consent before any action.
 5. Critically evaluate; object with arguments if suboptimal; do not obey blindly.
 
+### Consent — strict (no inferring)
+
+- **Consent = only the explicit phrase.** Do not infer consent from context. "User refined the requirement" or "task is clear" is not consent. Only "да", "делай", "добавь", "ок", "согласен", "вариант N" count.
+- **Refining requirements ≠ consent.** "Желательно чтобы…", "и ещё чтобы…", "нужно чтобы…" = clarification. Do not treat them as "go ahead"; wait for explicit "делай" / "ок" / "добавь" etc.
+- **Check before every edit.** Before creating or changing any file, ask: "In this conversation, did the user ever say да / делай / добавь / ок / согласен / вариант N?" If no → do not change; propose or answer in text only.
+- **Process over speed.** Even if the task and plan are clear, do not skip the consent step. Explicit agreement is mandatory; delivering without it violates the rule.
+
 ---
 
 ## Execution (after consent)
@@ -37,6 +44,8 @@ alwaysApply: true
 
 ## Forbidden
 
+- ❌ Infer consent from context; only explicit "да"/"делай"/"ок"/"добавь"/"согласен"/"вариант N" allow edits
+- ❌ Treat "желательно", "и ещё", "нужно чтобы" as consent to edit
 - ❌ `eslint-disable`, `ts-ignore`, `ts-expect-error` without agreement
 - ❌ Skip checks (type-check, lint, tests)
 - ❌ Finish without checking docs and rules
@@ -71,6 +80,10 @@ alwaysApply: true
 **✅ On question:** answer, discuss, wait for consent before acting.
 
 **❌ On question:** change files without answering first.
+
+**✅ Right:** user says "сделай X" → then "желательно чтобы Y" → you add Y to the plan and wait for "делай" / "ок" before editing.
+
+**❌ Wrong:** user says "сделай X", then "желательно чтобы Y" → you infer "they're refining = go" and start editing. (Refining is not consent.)
 
 ---
 
