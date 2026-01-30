@@ -412,7 +412,7 @@ describe('useRoute', () => {
             expect(result.current.pathname).toBe('/');
         });
 
-        it('replace(to, undefined, { base: "/auth" }) использует другой base для этого вызова', async () => {
+        it('replace(to, { base: "/auth" }) использует другой base для этого вызова', async () => {
             configureRouter({ base: '/app' });
             const mockNavigate = vi.fn().mockResolvedValue({
                 committed: Promise.resolve(),
@@ -431,13 +431,83 @@ describe('useRoute', () => {
             const { result } = renderHook(() => useRoute());
 
             await act(async () => {
-                await result.current.replace('/login', undefined, { base: '/auth' });
+                await result.current.replace('/login', { base: '/auth' });
             });
 
             expect(mockNavigate).toHaveBeenCalledWith(
                 '/auth/login',
                 expect.objectContaining({ history: 'replace' })
             );
+
+            delete (window as any).navigation;
+        });
+    });
+
+    describe('Локальный base в хуке (options.base)', () => {
+        it('useRoute({ base }) — один объект трактуется как опции (перегрузка)', () => {
+            window.location.pathname = '/dashboard/settings';
+            window.location.href = 'http://localhost/dashboard/settings';
+            const { result } = renderHook(() => useRoute({ base: '/dashboard' }));
+            expect(result.current.pathname).toBe('/settings');
+        });
+
+        it('useRoute({ base: "/dashboard" }) возвращает pathname без префикса раздела', () => {
+            window.location.pathname = '/dashboard/reports';
+            window.location.href = 'http://localhost/dashboard/reports';
+
+            const { result } = renderHook(() => useRoute({ base: '/dashboard' }));
+
+            expect(result.current.pathname).toBe('/reports');
+        });
+
+        it('useRoute({ base: "/dashboard" }) — navigate(to) добавляет base раздела', async () => {
+            const mockNavigate = vi.fn().mockResolvedValue({
+                committed: Promise.resolve(),
+                finished: Promise.resolve(),
+            });
+            (window as any).navigation = {
+                addEventListener: vi.fn(),
+                removeEventListener: vi.fn(),
+                currentEntry: { key: 'k0', url: 'http://localhost/dashboard/' },
+                entries: () => [{ key: 'k0' }],
+                canGoBack: false,
+                canGoForward: false,
+                navigate: mockNavigate,
+            };
+
+            const { result } = renderHook(() => useRoute({ base: '/dashboard' }));
+
+            await act(async () => {
+                await result.current.navigate('/reports');
+            });
+
+            expect(mockNavigate).toHaveBeenCalledWith('/dashboard/reports', expect.any(Object));
+
+            delete (window as any).navigation;
+        });
+
+        it('useRoute({ base: "/dashboard" }) — navigate(to, { base: "" }) переопределяет base хука', async () => {
+            const mockNavigate = vi.fn().mockResolvedValue({
+                committed: Promise.resolve(),
+                finished: Promise.resolve(),
+            });
+            (window as any).navigation = {
+                addEventListener: vi.fn(),
+                removeEventListener: vi.fn(),
+                currentEntry: { key: 'k0', url: 'http://localhost/dashboard/' },
+                entries: () => [{ key: 'k0' }],
+                canGoBack: false,
+                canGoForward: false,
+                navigate: mockNavigate,
+            };
+
+            const { result } = renderHook(() => useRoute({ base: '/dashboard' }));
+
+            await act(async () => {
+                await result.current.navigate('/login', { base: '' });
+            });
+
+            expect(mockNavigate).toHaveBeenCalledWith('/login', expect.any(Object));
 
             delete (window as any).navigation;
         });

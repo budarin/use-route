@@ -58,15 +58,15 @@ export interface RouterState {
 export interface NavigateOptions {
     /** 'replace' — заменить текущую запись, 'push' — новая запись, 'auto' — по умолчанию (браузер решает). */
     history?: 'push' | 'replace' | 'auto';
+    /** Состояние записи в истории (Navigation API): произвольные данные, связанные с этим переходом; можно прочитать из currentEntry.getState() после навигации. Передаётся в navigate и replace в одном поле options.state. */
     state?: unknown;
     /** Базовый путь для этого вызова. undefined — из configureRouter; '' или '/' — не добавлять префикс; иначе — этот путь как префикс (переход по другому base). */
     base?: string;
 }
 
-/** Опции для replace(): state и одноразовый base. */
-export interface ReplaceOptions {
-    state?: unknown;
-    /** Базовый путь для этого вызова (см. NavigateOptions.base). */
+/** Опции хука useRoute: локальный базовый путь для поддерева (раздел приложения под своим подпутём). */
+export interface UseRouteOptions {
+    /** Базовый путь для этого хука (раздел). pathname возвращается без этого префикса; navigate(to) по умолчанию добавляет его к относительным путям. Приоритет над глобальным base из configureRouter. '' или '/' — не добавлять префикс. */
     base?: string;
 }
 
@@ -80,7 +80,8 @@ export type UseRouteReturn<P extends string | PathMatcher | undefined = undefine
     back: () => void;
     forward: () => void;
     go: (delta: number) => void;
-    replace: (to: string | URL, state?: unknown, replaceOptions?: ReplaceOptions) => Promise<void>;
+    /** То же, что navigate(to, { ...options, history: 'replace' }). Опции те же, что у navigate (state, base); history игнорируется. */
+    replace: (to: string | URL, options?: NavigateOptions) => Promise<void>;
     canGoBack: (steps?: number) => boolean;
     canGoForward: (steps?: number) => boolean;
 };

@@ -7,6 +7,7 @@ import type {
     RouteParams,
     HistoryIndex,
     UseRouteReturn,
+    UseRouteOptions,
     NavigateOptions,
     NavigationEntryKey,
 } from './types';
@@ -230,7 +231,7 @@ export {
     type LoggerLevel,
     type Logger,
     type NavigateOptions,
-    type ReplaceOptions,
+    type UseRouteOptions,
     type UseRouteReturn,
     type ExtractRouteParams,
     type ParamsForPath,
@@ -249,7 +250,39 @@ export function clearRouterCaches(): void {
     noNavSnapshotUrl = null;
 }
 
-export function useRoute<P extends string | PathMatcher = string>(pattern?: P): UseRouteReturn<P> {
+/** Перегрузка: только опции (без pattern). Например useRoute({ base: '/dashboard' }). */
+export function useRoute(options: UseRouteOptions): UseRouteReturn;
+/** Перегрузка: pattern и опции. */
+export function useRoute<P extends string | PathMatcher>(
+    pattern: P,
+    options?: UseRouteOptions
+): UseRouteReturn<P>;
+/** Перегрузка: только pattern или без аргументов. */
+export function useRoute<P extends string | PathMatcher = string>(pattern?: P): UseRouteReturn<P>;
+/**
+ * Хук состояния маршрута и навигации (Navigation API + URLPattern).
+ * Вызов с одним объектом: useRoute({ base: '/dashboard' }) — опции без pattern.
+ * Вызов с pattern: useRoute('/users/:id') или useRoute('/users/:id', { base: '/dashboard' }).
+ */
+export function useRoute<P extends string | PathMatcher = string>(
+    patternOrOptions?: P | UseRouteOptions,
+    optionsParam?: UseRouteOptions
+): UseRouteReturn<P> {
+    let pattern: P | undefined;
+    let options: UseRouteOptions | undefined;
+    if (
+        arguments.length === 1 &&
+        typeof patternOrOptions === 'object' &&
+        patternOrOptions !== null &&
+        typeof patternOrOptions !== 'function'
+    ) {
+        options = patternOrOptions as UseRouteOptions;
+        pattern = undefined as unknown as P;
+    } else {
+        pattern = patternOrOptions as P | undefined;
+        options = optionsParam;
+    }
+
     const navigation = getNavigation();
     const rawState = useSyncExternalStore(
         subscribeToNavigation,
@@ -257,14 +290,14 @@ export function useRoute<P extends string | PathMatcher = string>(pattern?: P): 
         () => DEFAULT_SNAPSHOT
     );
     const keyToIndexMap = getKeyToIndexMap(rawState.entriesKeys);
+    const effectiveBase = options?.base ?? getRouterConfig().base;
 
     // 2. Производное состояние роутера. pathname/searchParams берём из snapshot (разбор URL один раз в store).
     const routerState: RouterState & {
         _entriesKeys: NavigationEntryKey[];
     } = useMemo(() => {
-        const config = getRouterConfig();
         const { urlStr, pathname: rawPathname, searchParams } = rawState;
-        const pathname = pathnameWithoutBase(rawPathname, config.base);
+        const pathname = pathnameWithoutBase(rawPathname, effectiveBase);
 
         let matched: boolean | undefined;
         let params: RouteParams = {};
@@ -298,20 +331,19 @@ export function useRoute<P extends string | PathMatcher = string>(pattern?: P): 
         rawState.pathname,
         rawState.searchParams,
         pattern,
-        getRouterConfig().base,
+        effectiveBase,
     ]);
 
     // 3. Навигационные операции. Только Navigation API — без Navigation состояние не обновляется.
     const navigate = useCallback(
-        async (to: string | URL, options: NavigateOptions = {}): Promise<void> => {
+        async (to: string | URL, navOptions: NavigateOptions = {}): Promise<void> => {
             let targetUrl = typeof to === 'string' ? to : to.toString();
-            const configBase = getRouterConfig().base;
             const baseForCall =
-                options.base !== undefined
-                    ? options.base === '' || options.base === '/'
+                navOptions.base !== undefined
+                    ? navOptions.base === '' || navOptions.base === '/'
                         ? undefined
-                        : options.base
-                    : configBase;
+                        : navOptions.base
+                    : effectiveBase;
             if (
                 baseForCall &&
                 baseForCall !== '/' &&
@@ -333,18 +365,18 @@ export function useRoute<P extends string | PathMatcher = string>(pattern?: P): 
             }
 
             const defaultHistory = getRouterConfig().defaultHistory ?? 'auto';
-            const navOptions: NavigationNavigateOptions = {
-                state: options.state,
-                history: options.history ?? defaultHistory,
+            const navigationOpts: NavigationNavigateOptions = {
+                state: navOptions.state,
+                history: navOptions.history ?? defaultHistory,
             };
 
             try {
-                await navigation.navigate(targetUrl, navOptions);
+                await navigation.navigate(targetUrl, navigationOpts);
             } catch (error) {
                 getLogger().error('[useRoute] Navigation error:', error);
             }
         },
-        [navigation]
+        [navigation, effectiveBase]
     );
 
     const back = useCallback(() => {
@@ -430,12 +462,8 @@ export function useRoute<P extends string | PathMatcher = string>(pattern?: P): 
     );
 
     const replace = useCallback(
-        (to: string | URL, state?: unknown, replaceOptions?: { state?: unknown; base?: string }) =>
-            navigate(to, {
-                history: 'replace',
-                state: replaceOptions?.state ?? state,
-                base: replaceOptions?.base,
-            }),
+        (to: string | URL, options?: NavigateOptions) =>
+            navigate(to, { ...options, history: 'replace' }),
         [navigate]
     );
 
