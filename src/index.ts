@@ -142,6 +142,14 @@ function computeNavigationSnapshot(nav: Navigation | undefined): NavigationSnaps
 let sharedSnapshot: NavigationSnapshot | null = null;
 const storeCallbacks = new Set<() => void>();
 let unsubscribeNavigation: (() => void) | null = null;
+let unsubscribePopstate: (() => void) | null = null;
+
+function invalidateSnapshotAndNotify(): void {
+    sharedSnapshot = null;
+    noNavSnapshot = null;
+    noNavSnapshotUrl = null;
+    storeCallbacks.forEach((cb) => cb());
+}
 
 function subscribeToNavigation(callback: () => void): () => void {
     storeCallbacks.add(callback);
@@ -159,6 +167,13 @@ function subscribeToNavigation(callback: () => void): () => void {
                 nav.removeEventListener('currententrychange', listener);
             };
         }
+        if (isBrowser && typeof window.addEventListener === 'function') {
+            const popListener = () => invalidateSnapshotAndNotify();
+            window.addEventListener('popstate', popListener);
+            unsubscribePopstate = () => {
+                window.removeEventListener('popstate', popListener);
+            };
+        }
     }
     return () => {
         storeCallbacks.delete(callback);
@@ -166,6 +181,10 @@ function subscribeToNavigation(callback: () => void): () => void {
             if (unsubscribeNavigation) {
                 unsubscribeNavigation();
                 unsubscribeNavigation = null;
+            }
+            if (unsubscribePopstate) {
+                unsubscribePopstate();
+                unsubscribePopstate = null;
             }
             sharedSnapshot = null;
             noNavSnapshot = null;
@@ -179,13 +198,32 @@ let noNavSnapshotUrl: UrlString | null = null;
 
 function getNavigationSnapshot(): NavigationSnapshot {
     if (sharedSnapshot !== null) return sharedSnapshot;
+    // В браузере pathname/searchParams всегда из location — чтобы после pushState снимок был актуальным
+    if (isBrowser) {
+        const urlStr = window.location.href;
+        const parsed = getCachedParsedUrl(urlStr);
+        const nav = getNavigation();
+        sharedSnapshot = nav
+            ? {
+                  ...computeNavigationSnapshot(nav),
+                  urlStr,
+                  pathname: parsed.pathname,
+                  searchParams: parsed.searchParams,
+              }
+            : {
+                  ...DEFAULT_SNAPSHOT,
+                  urlStr,
+                  pathname: parsed.pathname,
+                  searchParams: parsed.searchParams,
+              };
+        return sharedSnapshot;
+    }
     const nav = getNavigation();
     if (nav) {
         sharedSnapshot = computeNavigationSnapshot(nav);
         return sharedSnapshot;
     }
-    // Нет Navigation API (тесты, старый браузер, SSR) — URL из window.location или из конфига (initialLocation для SSR)
-    const urlStr = isBrowser ? window.location.href : (getRouterConfig().initialLocation ?? '/');
+    const urlStr = getRouterConfig().initialLocation ?? '/';
     if (noNavSnapshot !== null && noNavSnapshotUrl === urlStr) return noNavSnapshot;
     const parsed = getCachedParsedUrl(urlStr);
     noNavSnapshotUrl = urlStr;
@@ -272,7 +310,7 @@ export function useRoute<P extends string | PathMatcher>(
 /** Перегрузка: только pattern или без аргументов. */
 export function useRoute<P extends string | PathMatcher = string>(pattern?: P): UseRouteReturn<P>;
 /**
- * Хук состояния маршрута и навигации (Navigation API + URLPattern).
+ * Хук состояния маршрута и навигации (History API same-origin + Navigation API + URLPattern).
  * useRoute({ section: '/dashboard' }) — options only, no pattern.
  * useRoute('/users/:id') or useRoute('/users/:id', { section: '/dashboard' }).
  */
@@ -375,6 +413,34 @@ export function useRoute<P extends string | PathMatcher = string>(
                 return;
             }
 
+            // Same-document переход через History API — без перезагрузки страницы
+            if (isBrowser && typeof window.history !== 'undefined') {
+                const origin = window.location.origin;
+                const fullUrl =
+                    targetUrl.startsWith('http://') || targetUrl.startsWith('https://')
+                        ? targetUrl
+                        : origin + (targetUrl.startsWith('/') ? targetUrl : '/' + targetUrl);
+                try {
+                    const urlParsed = new URL(fullUrl);
+                    if (urlParsed.origin === origin) {
+                        const useReplace =
+                            navOptions.history === 'replace' ||
+                            (navOptions.history !== 'push' &&
+                                getRouterConfig().defaultHistory === 'replace');
+                        const state = navOptions.state ?? null;
+                        if (useReplace) {
+                            window.history.replaceState(state, '', fullUrl);
+                        } else {
+                            window.history.pushState(state, '', fullUrl);
+                        }
+                        invalidateSnapshotAndNotify();
+                        return;
+                    }
+                } catch {
+                    // не тот формат URL — fallback к Navigation API
+                }
+            }
+
             if (!navigation) {
                 return;
             }
@@ -396,7 +462,11 @@ export function useRoute<P extends string | PathMatcher = string>(
 
     const back = useCallback(() => {
         try {
-            if (navigation) navigation.back();
+            if (isBrowser && typeof window.history !== 'undefined') {
+                window.history.back();
+            } else if (navigation) {
+                navigation.back();
+            }
         } catch (error) {
             getLogger().error('[useRoute] Back navigation error:', error);
         }
@@ -404,7 +474,11 @@ export function useRoute<P extends string | PathMatcher = string>(
 
     const forward = useCallback(() => {
         try {
-            if (navigation) navigation.forward();
+            if (isBrowser && typeof window.history !== 'undefined') {
+                window.history.forward();
+            } else if (navigation) {
+                navigation.forward();
+            }
         } catch (error) {
             getLogger().error('[useRoute] Forward navigation error:', error);
         }
