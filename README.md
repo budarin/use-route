@@ -32,8 +32,8 @@
 - ✅ **Динамическая история** — при каждом `navigate`/`replace` выбирается `push` или `replace`
 - ✅ **Navigation API** — `navigation.navigate()`, `back()`, `forward()`, `traverseTo()`
 - ✅ **URLPattern** для парсинга `:params`
-- ✅ `useSyncExternalStore` — concurrent-safe, SSR-ready
-- ✅ `canGoBack(n)`, `canGoForward(n)` — точная проверка по истории
+- ✅ **useSyncExternalStore** — concurrent-safe, SSR-ready
+- ✅ **canGoBack(n)**, `canGoForward(n)` — точная проверка по истории
 - ✅ **LRU кэш URL** с настраиваемым лимитом (по умолчанию 50)
 - ✅ **O(1) поиск** `historyIndex` через Map
 - ✅ **0 провайдеров** — просто `useRoute()`
