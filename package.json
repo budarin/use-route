@@ -1,5 +1,5 @@
 {
-    "name": "@budarin/react-router",
+    "name": "@budarin/use-router",
     "version": "1.0.3",
     "description": "",
     "main": "dist/index.js",

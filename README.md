@@ -1,4 +1,4 @@
-# @budarin/react-router
+# @budarin/use-router
 
 **Минимум кода. Максимум SPA-навигации.**
 
@@ -6,10 +6,10 @@
 
 **Для динамического дерева компонентов:** что рендерить определяется в рантайме по URL (`pathname`, `params`, `matched`), а не статичным деревом маршрутов (как в React Router / TanStack Router). История тоже формируется динамически: при каждом переходе можно выбрать `push` или `replace`. Подходит, когда маршруты зависят от ролей, фич, CMS или конфига с бэка.
 
-[![npm](https://img.shields.io/npm/v/@budarin/react-router?color=cb0000)](https://www.npmjs.com/package/@budarin/react-router)
-[![npm](https://img.shields.io/npm/dt/@budarin/react-router)](https://www.npmjs.com/package/@budarin/react-router)
-[![bundle](https://img.shields.io/bundlephobia/minzip/@budarin/react-router)](https://bundlephobia.com/result?p=@budarin/react-router)
-[![GitHub](https://img.shields.io/github/license/budarin/the-router)](https://github.com/budarin/the-router)
+[![npm](https://img.shields.io/npm/v/@budarin/use-router?color=cb0000)](https://www.npmjs.com/package/@budarin/use-router)
+[![npm](https://img.shields.io/npm/dt/@budarin/use-router)](https://www.npmjs.com/package/@budarin/use-router)
+[![bundle](https://img.shields.io/bundlephobia/minzip/@budarin/use-router)](https://bundlephobia.com/result?p=@budarin/use-router)
+[![GitHub](https://img.shields.io/github/license/budarin/use-router)](https://github.com/budarin/use-router)
 
 ## ✨ Особенности
 
@@ -28,11 +28,11 @@
 ## 🚀 Быстрый старт
 
 ```bash
-npm i @budarin/react-router
+npm i @budarin/use-router
 ```
 
 ```typescript
-import { useRouter, configureRouter } from '@budarin/react-router';
+import { useRouter, configureRouter } from '@budarin/use-router';
 
 
 function App() {
@@ -135,7 +135,7 @@ useRouter('/blog/:year(\\d+)/:month(\\d+)');
 ### 1. Базовая навигация (pathname, navigate)
 
 ```tsx
-import { useRouter } from '@budarin/react-router';
+import { useRouter } from '@budarin/use-router';
 
 function BasicNavigationExample() {
     const { pathname, navigate } = useRouter();
@@ -157,7 +157,7 @@ function BasicNavigationExample() {
 ### 2. Параметры пути (useRouter('/users/:id'), params)
 
 ```tsx
-import { useRouter } from '@budarin/react-router';
+import { useRouter } from '@budarin/use-router';
 
 function ParamsExample() {
     const { params, pathname, navigate } = useRouter('/users/:id');
@@ -180,7 +180,7 @@ function ParamsExample() {
 ### 3. Search params (query)
 
 ```tsx
-import { useRouter } from '@budarin/react-router';
+import { useRouter } from '@budarin/use-router';
 
 function SearchParamsExample() {
     const { searchParams, navigate, pathname } = useRouter('/posts');
@@ -209,7 +209,7 @@ function SearchParamsExample() {
 ### 4. История (back, forward, go, canGoBack, canGoForward)
 
 ```tsx
-import { useRouter } from '@budarin/react-router';
+import { useRouter } from '@budarin/use-router';
 
 function HistoryExample() {
     const { go, back, forward, canGoBack, canGoForward } = useRouter();
@@ -236,7 +236,7 @@ function HistoryExample() {
 ### 5. Push и replace (и метод replace())
 
 ```tsx
-import { useRouter } from '@budarin/react-router';
+import { useRouter } from '@budarin/use-router';
 
 function PushReplaceExample() {
     const { navigate, replace, pathname } = useRouter();
@@ -261,7 +261,7 @@ function PushReplaceExample() {
 ### 6. matched (совпадение pathname с pattern)
 
 ```tsx
-import { useRouter } from '@budarin/react-router';
+import { useRouter } from '@budarin/use-router';
 
 function MatchedExample() {
     const { pathname, matched, params } = useRouter('/users/:id');
@@ -283,11 +283,11 @@ function MatchedExample() {
 ## ⚙️ Установка
 
 ```bash
-npm i @budarin/react-router
+npm i @budarin/use-router
 
-pnpm add @budarin/react-router
+pnpm add @budarin/use-router
 
-yarn add @budarin/react-router
+yarn add @budarin/use-router
 ```
 
 TypeScript: типы включены.
