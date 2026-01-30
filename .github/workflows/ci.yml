@@ -3,6 +3,16 @@ name: CI
 on:
     push:
         branches: [master]
+        paths:
+            - 'src/**'
+            - 'tests/**'
+            - 'package.json'
+            - 'pnpm-lock.yaml'
+            - 'tsconfig.json'
+            - 'vitest.config.ts'
+            - '.prettierrc'
+            - '.prettierignore'
+            - '.github/workflows/**'
 
 jobs:
     check:
