@@ -447,12 +447,15 @@ function DashboardSection() {
         <div>
             {/* При URL /dashboard/reports pathname === '/reports' */}
             <p>Раздел Dashboard. Путь: {pathname}</p>
+
             <button type="button" onClick={() => navigate('/reports')}>
                 Отчёты → /dashboard/reports
             </button>
+
             <button type="button" onClick={() => navigate('/settings')}>
                 Настройки → /dashboard/settings
             </button>
+
             {/* Переход вне раздела: свой base в вызове */}
             <button type="button" onClick={() => navigate('/', { base: '' })}>
                 На главную
