@@ -23,7 +23,8 @@
 
 **Живое демо:** запуск в браузере без установки; исходники в папке [demo/](https://github.com/budarin/use-route/tree/master/demo). Чтобы открыть в новой вкладке: Ctrl+клик (Cmd+клик на Mac).
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/budarin/use-route/tree/master/demo)
+- [Open in StackBlitz](https://stackblitz.com/github/budarin/use-route/tree/master/demo)
+- [Open in CodeSandbox](https://githubbox.com/budarin/use-route/tree/master/demo) — если StackBlitz недоступен (например, в РФ без VPN)
 
 ## ✨ Особенности
 
