@@ -125,6 +125,52 @@ describe('useRouter', () => {
             });
             expect(result.current.matched).toBe(true);
         });
+
+        it('опциональные группы: один паттерн, путь без опциональной части — params только по совпавшим сегментам', () => {
+            window.location.pathname = '/cps/1592813';
+            window.location.href = 'http://localhost/cps/1592813';
+
+            const { result } = renderHook(() => useRouter('/cps/:cpId{/element/:elId}?'));
+
+            expect(result.current.params).toEqual({ cpId: '1592813' });
+            expect(result.current.matched).toBe(true);
+        });
+
+        it('опциональные группы: путь с опциональной частью — params включают elId', () => {
+            window.location.pathname = '/cps/1592813/element/5';
+            window.location.href = 'http://localhost/cps/1592813/element/5';
+
+            const { result } = renderHook(() => useRouter('/cps/:cpId{/element/:elId}?'));
+
+            expect(result.current.params).toEqual({
+                cpId: '1592813',
+                elId: '5',
+            });
+            expect(result.current.matched).toBe(true);
+        });
+
+        it('опциональные группы: pathname не совпадает с паттерном — matched: false, params: {}', () => {
+            window.location.pathname = '/other';
+            window.location.href = 'http://localhost/other';
+
+            const { result } = renderHook(() => useRouter('/cps/:cpId{/element/:elId}?'));
+
+            expect(result.current.params).toEqual({});
+            expect(result.current.matched).toBe(false);
+        });
+
+        it('паттерн с regexp в параметре — совпадает и извлекает params', () => {
+            window.location.pathname = '/blog/2024/02';
+            window.location.href = 'http://localhost/blog/2024/02';
+
+            const { result } = renderHook(() => useRouter('/blog/:year(\\d+)/:month(\\d+)'));
+
+            expect(result.current.params).toEqual({
+                year: '2024',
+                month: '02',
+            });
+            expect(result.current.matched).toBe(true);
+        });
     });
 
     describe('Навигация при отсутствии Navigation API (no-op)', () => {
