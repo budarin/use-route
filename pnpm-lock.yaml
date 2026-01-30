@@ -45,8 +45,8 @@ importers:
   demo:
     dependencies:
       '@budarin/use-route':
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: ^1.3.0
+        version: 1.3.0
       react:
         specifier: ^19.0.0
         version: 19.2.4
@@ -174,8 +174,8 @@ packages:
     resolution: {integrity: sha512-0ZrskXVEHSWIqZM/sQZ4EV3jZJXRkio/WCxaqKZP1g//CEWEPSfeZFcms4XeKBCHU0ZKnIkdJeU/kF+eRp5lBg==}
     engines: {node: '>=6.9.0'}
 
-  '@budarin/use-route@1.2.0':
-    resolution: {integrity: sha512-eE53/NbO047QxUWqs1yRH+njKm0jvlakzNC3XTcvMsb9b2sVFw45ekyicrIot7FeyjHWY0/LfCRt6IFEtVu16w==}
+  '@budarin/use-route@1.3.0':
+    resolution: {integrity: sha512-up0R2vutti3EfwqNeju+PHHNDtPAa4Yld3izQA7PmzAM7JcEYO5l0MDl4ZT0pB8OWdpPULAw24+9UawmztxZWQ==}
 
   '@csstools/color-helpers@5.1.0':
     resolution: {integrity: sha512-S11EXWJyy0Mz5SYvRmY8nJYTFFd1LCNV+7cXyAgQtOOuzb4EsgfqDufL+9esx72/eLhsRdGZwaldu/h+E4t4BA==}
@@ -1435,7 +1435,7 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
 
-  '@budarin/use-route@1.2.0': {}
+  '@budarin/use-route@1.3.0': {}
 
   '@csstools/color-helpers@5.1.0': {}
 
