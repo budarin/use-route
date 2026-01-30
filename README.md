@@ -112,7 +112,14 @@ configureRouter({
 
 **Логгер:** тип `Logger` — объект с методами `trace`, `debug`, `info`, `warn`, `error` (как у `console`). Уровни: `LoggerLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error'`. Если не передан — используется `console`.
 
-**`pattern` (опционально):** строка-шаблон пути (нативный **URLPattern**) или функция-матчер **PathMatcher** `(pathname) => { matched, params }`. Для иерархических/кастомных маршрутов (split + проверка, RegExp с lookbehind и т.п.) передавайте функцию — хук вызовет её по текущему pathname и подставит `matched` и `params`.
+**`pattern` (опционально):** строка-шаблон пути (нативный **URLPattern**) или функция **PathMatcher**. См. ниже.
+
+**PathMatcher** — функция, которую можно передать вместо строки, когда одного URLPattern недостаточно (иерархия сегментов, кастомная валидация, разбор через `split` или RegExp). Хук вызывает её с текущим `pathname` и подставляет возвращённые `matched` и `params` в состояние.
+
+- **Параметр:** `pathname: string` — текущий pathname (без origin и query).
+- **Возвращаемый тип:** `{ matched: boolean; params: RouteParams }`.  
+  `matched` — совпал ли путь с вашей логикой; `params` — объект «имя параметра → значение сегмента» (тип `RouteParams` = `Record<RouteParamName, RouteParamValue>`).
+- **Где использовать:** иерархические маршруты (например, `postId` только при наличии `userId`), пути с жёстким порядком сегментов, кастомные правила, которые не выразить одним URLPattern.
 
 **Строка (URLPattern).** Поддерживается:
 
