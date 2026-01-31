@@ -70,7 +70,7 @@
     "prettier.configPath": ".prettierrc",
     "prettier.experimentalTernaries": true,
     "prettier.enableDebugLogs": true,
-    "prettier.prettierPath": "./node_modules/prettier",
+    "prettier.prettierPath": "${workspaceFolder}/node_modules/prettier",
     "prettier.htmlWhitespaceSensitivity": "strict",
     "[json]": {
         "editor.formatOnSave": true
@@ -96,7 +96,7 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[typescript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
     },
     "[javascript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -105,7 +105,7 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[markdown]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
     },
     // workbench
     "workbench.iconTheme": "vscode-icons",
