@@ -6,6 +6,7 @@ import { UserProfile } from './pages/UserProfile';
 import { Posts } from './pages/Posts';
 import { History } from './pages/History';
 import { PushReplace } from './pages/PushReplace';
+import { State } from './pages/State';
 import { CustomMatcher } from './pages/CustomMatcher';
 import { BaseDemo } from './pages/BaseDemo';
 
@@ -70,6 +71,13 @@ function Nav() {
                     Push/Replace
                 </Link>
                 <Link
+                    to={(section || '') + '/state'}
+                    className={pathname.startsWith((section || '') + '/state') ? 'active' : ''}
+                    title="State: установка при навигации, чтение, updateState"
+                >
+                    State
+                </Link>
+                <Link
                     to={(section || '') + '/products/books/1'}
                     className={pathname.startsWith((section || '') + '/products') ? 'active' : ''}
                     title="Свой разбор пути (PathMatcher)"
@@ -115,6 +123,9 @@ function Router() {
     }
     if (pathname.startsWith('/push-replace')) {
         return <PushReplace />;
+    }
+    if (pathname.startsWith('/state')) {
+        return <State />;
     }
     if (pathname.startsWith('/products/')) {
         return <CustomMatcher />;

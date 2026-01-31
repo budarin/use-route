@@ -30,6 +30,9 @@ export function Home() {
                 <button type="button" onClick={() => navigate('/push-replace')}>
                     Push и Replace — как добавлять или заменять запись в истории
                 </button>
+                <button type="button" onClick={() => navigate('/state')}>
+                    State — установка при навигации, чтение, updateState (черновик формы)
+                </button>
                 <Link to="/products/books/1">Товары — свой разбор пути (PathMatcher)</Link>
                 <Link to="/base-demo">Раздел (section)</Link>
             </div>
