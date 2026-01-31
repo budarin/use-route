@@ -546,22 +546,6 @@ export function useRoute<P extends string | PathMatcher = string>(
                 state: routerState.state,
                 matched: routerState.matched,
             }) as UseRouteReturn<P>,
-        [
-            navigate,
-            back,
-            forward,
-            go,
-            replace,
-            updateState,
-            canGoBack,
-            canGoForward,
-            routerState.location,
-            routerState.pathname,
-            routerState.searchParams,
-            routerState.params,
-            routerState.historyIndex,
-            routerState.state,
-            routerState.matched,
-        ]
+        [navigate, back, forward, go, replace, updateState, canGoBack, canGoForward, routerState]
     );
 }
