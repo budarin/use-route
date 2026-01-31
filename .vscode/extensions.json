@@ -19,7 +19,6 @@
     "wallabyjs.wallaby-vscode",
     "yoavbls.pretty-ts-errors",
     "donjayamanne.githistory",
-    "dotjoshjohnson.xml",
-    "rvest.vs-code-prettier-eslint"
+    "dotjoshjohnson.xml"
   ]
 }
