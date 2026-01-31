@@ -5,6 +5,12 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 версионирование — [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.3.3] - 2025-02-01
+
+### Изменено
+
+- **useRoute:** в зависимостях финального `useMemo` вместо перечисления полей `routerState` (location, pathname, searchParams, params, historyIndex, state, matched) используется один объект `routerState`. Поведение не меняется: ссылка на `routerState` обновляется только при изменении этих данных.
+
 ## [1.3.2] - 2025-01-31
 
 ### Добавлено
