@@ -30,7 +30,6 @@
         "build": "tsc",
         "type-check": "tsc -build --noEmit",
         "lint": "prettier --check .",
-        "format": "prettier --write .",
         "test": "vitest",
         "test:ui": "vitest --ui",
         "test:run": "vitest run",
