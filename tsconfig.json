@@ -33,6 +33,7 @@
         "sourceMap": true,
         "emitDeclarationOnly": false,
         "stripInternal": true,
+        "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.use-router.tsbuildinfo",
 
         /* Пути при желании (пример) */
         "baseUrl": ".",
