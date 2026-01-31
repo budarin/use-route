@@ -258,9 +258,11 @@ describe('useRoute', () => {
 
         it('updateState(state) при наличии Navigation API вызывает updateCurrentEntry и хук возвращает новый state', () => {
             let entryState: unknown = undefined;
-            const updateCurrentEntrySpy = vi.fn().mockImplementation((opts?: { state?: unknown }) => {
-                entryState = opts?.state;
-            });
+            const updateCurrentEntrySpy = vi
+                .fn()
+                .mockImplementation((opts?: { state?: unknown }) => {
+                    entryState = opts?.state;
+                });
             (window as any).navigation = {
                 navigate: vi.fn(),
                 addEventListener: vi.fn(),
