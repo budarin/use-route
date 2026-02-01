@@ -5,6 +5,18 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 версионирование — [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.3.4] - 2025-02-01
+
+### Изменено
+
+- **Оптимизация производительности:** все методы навигации (`navigate`, `back`, `forward`, `go`, `replace`, `updateState`, `canGoBack`, `canGoForward`) теперь создаются **один раз глобально** вместо создания в каждом компоненте. При 50 компонентах с `useRoute()` экономия ~400 `useCallback` вызовов. Методы кэшируются по `effectiveBase` и переиспользуются между компонентами.
+- **Глобальное хранилище состояния:** `sharedSnapshot` теперь всегда валиден и не очищается при отписке последнего подписчика. Методы читают актуальный snapshot без дополнительных вычислений (O(1)).
+- **Упрощение кода:** удалён fallback на старое API (`window.location`, `window.history.pushState/replaceState`) для браузеров без Navigation API. Хук строго требует Navigation API в браузере; без него возвращает дефолтное состояние и методы работают в режиме no-op. SSR поддержка через `initialLocation` сохранена.
+
+### Удалено
+
+- **Fallback на window.location/history:** в браузере без Navigation API хук больше не использует `window.location.href` для получения pathname и `window.history` для навигации. Вместо этого возвращается `DEFAULT_SNAPSHOT` (pathname: '/', searchParams: empty), методы навигации — no-op.
+
 ## [1.3.3] - 2025-02-01
 
 ### Изменено
