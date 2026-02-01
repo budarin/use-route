@@ -52,7 +52,7 @@ alwaysApply: true
 
 ## Forbidden
 
-- ❌ **Запускать долгоживущие процессы в фоне** (dev-сервер `pnpm dev`, watch, MCP-браузер и т.п.) без явной просьбы пользователя. Если такой процесс всё же запущен — сразу предупредить: «Процесс остаётся запущенным, останови вручную (Ctrl+C в терминале / закрой вкладку)». Не оставлять процессы висеть без предупреждения.
+- ❌ **Run long-lived processes in the background** (dev server, watch, MCP browser, etc.) without explicit user request. If such a process is still running, immediately warn: "The process remains running, stop manually (Ctrl+C in the terminal / close the tab)." Do not leave processes hanging without warning.
 - ❌ Be a "silent executor": do everything said without criticism or discussion, even when wrong or suboptimal
 - ❌ Infer consent from context; only explicit "да"/"делай"/"ок"/"добавь"/"согласен"/"вариант N" allow edits
 - ❌ Treat "желательно", "и ещё", "нужно чтобы" as consent to edit
