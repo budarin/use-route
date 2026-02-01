@@ -158,3 +158,40 @@ button:disabled {
     gap: 0.5rem;
     margin: 0.75rem 0;
 }
+
+/* Ссылки внутри блока кнопок — в одном стиле с кнопками */
+.demo-buttons a {
+    display: inline-block;
+    font: inherit;
+    cursor: pointer;
+    padding: 0.4em 0.8em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+    color: #1a1a1a;
+    text-decoration: none;
+}
+
+.demo-buttons a:hover {
+    background: #f0f0f0;
+    text-decoration: none;
+}
+
+/* Отдельные ссылки «назад» / «на главную» в контенте — тоже под кнопку */
+.demo-content a.demo-link-btn {
+    display: inline-block;
+    font: inherit;
+    cursor: pointer;
+    padding: 0.4em 0.8em;
+    margin: 0.25rem 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+    color: #1a1a1a;
+    text-decoration: none;
+}
+
+.demo-content a.demo-link-btn:hover {
+    background: #f0f0f0;
+    text-decoration: none;
+}

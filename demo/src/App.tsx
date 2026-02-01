@@ -147,7 +147,9 @@ function Router() {
             <p>
                 Путь <code>{pathname}</code> не найден.
             </p>
-            <Link to="/">На главную</Link>
+            <Link to="/" className="demo-link-btn">
+                На главную
+            </Link>
         </div>
     );
 }

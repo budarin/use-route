@@ -36,7 +36,9 @@ export function PushReplace() {
                 </button>
             </div>
             <p>
-                <Link to="/push-replace">Вернуться в начало этого раздела</Link>
+                <Link to="/push-replace" className="demo-link-btn">
+                    Вернуться в начало этого раздела
+                </Link>
             </p>
         </div>
     );

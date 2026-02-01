@@ -43,7 +43,9 @@ export function State() {
                     </code>
                 </p>
                 <p>
-                    <Link to="/state">← Вернуться к примеру State</Link>
+                    <Link to="/state" className="demo-link-btn">
+                        ← Вернуться к примеру State
+                    </Link>
                 </p>
             </div>
         );
@@ -112,7 +114,9 @@ export function State() {
             </div>
 
             <p>
-                <Link to="/">На главную</Link>
+                <Link to="/" className="demo-link-btn">
+                    На главную
+                </Link>
             </p>
         </div>
     );
