@@ -8,6 +8,7 @@ import {
     type Pathname,
     type RouteParams,
 } from '../src/index';
+import { setupTestNavigation } from '../src/testing';
 
 /** Запись истории в моке Navigation API */
 interface MockHistoryEntry {
@@ -38,8 +39,9 @@ interface TestWindow extends Window {
 
 describe('useRoute', () => {
     let originalWindow: typeof window;
+    let restoreTestEnv: (() => void) | null = null;
 
-    // Helper для создания мока Navigation API
+    // Helper для создания мока Navigation API (локально, для специфичных тестов)
     function createNavigationMock(initialUrl: string = 'http://localhost/'): NavigationMock {
         const entries: MockHistoryEntry[] = [
             {
@@ -76,34 +78,12 @@ describe('useRoute', () => {
 
     beforeEach(() => {
         originalWindow = window;
-
-        window = {
-            ...originalWindow,
-            location: {
-                href: 'http://localhost/',
-                origin: 'http://localhost',
-                pathname: '/',
-                search: '',
-                hash: '',
-            } as Location,
-            history: {
-                ...originalWindow.history,
-                replaceState: vi.fn(),
-                pushState: vi.fn(),
-                back: vi.fn(),
-                forward: vi.fn(),
-                go: vi.fn(),
-                length: 1,
-                state: undefined,
-            },
-        } as unknown as Window & typeof globalThis;
-
-        // По умолчанию создаём мок Navigation API
-        (window as TestWindow).navigation = createNavigationMock();
+        restoreTestEnv = setupTestNavigation({ initialUrl: 'http://localhost/' });
     });
 
     afterEach(() => {
-        window = originalWindow;
+        restoreTestEnv?.();
+        restoreTestEnv = null;
         vi.clearAllMocks();
     });
 
@@ -133,7 +113,8 @@ describe('useRoute', () => {
         });
 
         it('должен возвращать текущий pathname', () => {
-            (window as TestWindow).navigation = createNavigationMock('http://localhost/users/123');
+            restoreTestEnv?.();
+            restoreTestEnv = setupTestNavigation({ initialUrl: 'http://localhost/users/123' });
             clearRouteCaches();
 
             const { result } = renderHook(() => useRoute());
@@ -142,9 +123,10 @@ describe('useRoute', () => {
         });
 
         it('должен парсить search params', () => {
-            (window as TestWindow).navigation = createNavigationMock(
-                'http://localhost/posts?page=2&sort=date'
-            );
+            restoreTestEnv?.();
+            restoreTestEnv = setupTestNavigation({
+                initialUrl: 'http://localhost/posts?page=2&sort=date',
+            });
             clearRouteCaches();
 
             const { result } = renderHook(() => useRoute());
@@ -156,7 +138,8 @@ describe('useRoute', () => {
 
     describe('Параметры из роутов (pattern)', () => {
         it('должен парсить параметры по переданному паттерну', () => {
-            (window as TestWindow).navigation = createNavigationMock('http://localhost/users/123');
+            restoreTestEnv?.();
+            restoreTestEnv = setupTestNavigation({ initialUrl: 'http://localhost/users/123' });
             clearRouteCaches();
 
             const { result } = renderHook(() => useRoute('/users/:id'));
@@ -165,9 +148,10 @@ describe('useRoute', () => {
         });
 
         it('должен парсить несколько параметров', () => {
-            (window as TestWindow).navigation = createNavigationMock(
-                'http://localhost/posts/2024/my-post'
-            );
+            restoreTestEnv?.();
+            restoreTestEnv = setupTestNavigation({
+                initialUrl: 'http://localhost/posts/2024/my-post',
+            });
             clearRouteCaches();
 
             const { result } = renderHook(() => useRoute('/posts/:year/:slug'));
@@ -179,7 +163,8 @@ describe('useRoute', () => {
         });
 
         it('должен возвращать пустой объект и matched: false, если роут не совпал', () => {
-            (window as TestWindow).navigation = createNavigationMock('http://localhost/unknown');
+            restoreTestEnv?.();
+            restoreTestEnv = setupTestNavigation({ initialUrl: 'http://localhost/unknown' });
             clearRouteCaches();
 
             const { result } = renderHook(() => useRoute('/users/:id'));
@@ -189,9 +174,10 @@ describe('useRoute', () => {
         });
 
         it('должен не включать сегмент * в params и возвращать matched: true (wildcard, URLPattern)', () => {
-            (window as TestWindow).navigation = createNavigationMock(
-                'http://localhost/elements/123/456/789'
-            );
+            restoreTestEnv?.();
+            restoreTestEnv = setupTestNavigation({
+                initialUrl: 'http://localhost/elements/123/456/789',
+            });
             clearRouteCaches();
 
             const { result } = renderHook(() => useRoute('/elements/:elementId/*/:subsubId'));
@@ -204,9 +190,10 @@ describe('useRoute', () => {
         });
 
         it('опциональные группы: один паттерн, путь без опциональной части — params только по совпавшим сегментам', () => {
-            (window as TestWindow).navigation = createNavigationMock(
-                'http://localhost/cps/1592813'
-            );
+            restoreTestEnv?.();
+            restoreTestEnv = setupTestNavigation({
+                initialUrl: 'http://localhost/cps/1592813',
+            });
             clearRouteCaches();
 
             const { result } = renderHook(() => useRoute('/cps/:cpId{/element/:elId}?'));
@@ -216,9 +203,10 @@ describe('useRoute', () => {
         });
 
         it('опциональные группы: путь с опциональной частью — params включают elId', () => {
-            (window as TestWindow).navigation = createNavigationMock(
-                'http://localhost/cps/1592813/element/5'
-            );
+            restoreTestEnv?.();
+            restoreTestEnv = setupTestNavigation({
+                initialUrl: 'http://localhost/cps/1592813/element/5',
+            });
             clearRouteCaches();
 
             const { result } = renderHook(() => useRoute('/cps/:cpId{/element/:elId}?'));
@@ -231,7 +219,8 @@ describe('useRoute', () => {
         });
 
         it('опциональные группы: pathname не совпадает с паттерном — matched: false, params: {}', () => {
-            (window as TestWindow).navigation = createNavigationMock('http://localhost/other');
+            restoreTestEnv?.();
+            restoreTestEnv = setupTestNavigation({ initialUrl: 'http://localhost/other' });
             clearRouteCaches();
 
             const { result } = renderHook(() => useRoute('/cps/:cpId{/element/:elId}?'));
@@ -241,9 +230,10 @@ describe('useRoute', () => {
         });
 
         it('паттерн с regexp в параметре — совпадает и извлекает params', () => {
-            (window as TestWindow).navigation = createNavigationMock(
-                'http://localhost/blog/2024/02'
-            );
+            restoreTestEnv?.();
+            restoreTestEnv = setupTestNavigation({
+                initialUrl: 'http://localhost/blog/2024/02',
+            });
             clearRouteCaches();
 
             const { result } = renderHook(() => useRoute('/blog/:year(\\d+)/:month(\\d+)'));
@@ -266,7 +256,8 @@ describe('useRoute', () => {
         };
 
         it('при совпадении возвращает matched: true и params из матчера', () => {
-            (window as TestWindow).navigation = createNavigationMock('http://localhost/cps/123');
+            restoreTestEnv?.();
+            restoreTestEnv = setupTestNavigation({ initialUrl: 'http://localhost/cps/123' });
             clearRouteCaches();
 
             const { result } = renderHook(() => useRoute(matcher));
@@ -472,7 +463,8 @@ describe('useRoute', () => {
     describe('clearRouteCaches', () => {
         it('очищает кэши; после очистки хук с pattern работает', () => {
             clearRouteCaches();
-            (window as TestWindow).navigation = createNavigationMock('http://localhost/users/42');
+            restoreTestEnv?.();
+            restoreTestEnv = setupTestNavigation({ initialUrl: 'http://localhost/users/42' });
 
             const { result } = renderHook(() => useRoute('/users/:id'));
 
@@ -488,9 +480,10 @@ describe('useRoute', () => {
 
         it('pathname возвращается без base', () => {
             configureRoute({ base: '/app' });
-            (window as TestWindow).navigation = createNavigationMock(
-                'http://localhost/app/dashboard'
-            );
+            restoreTestEnv?.();
+            restoreTestEnv = setupTestNavigation({
+                initialUrl: 'http://localhost/app/dashboard',
+            });
             clearRouteCaches();
 
             const { result } = renderHook(() => useRoute());
@@ -622,18 +615,20 @@ describe('useRoute', () => {
 
     describe('Section in hook (options.section)', () => {
         it('useRoute({ section }) — one object treated as options (overload)', () => {
-            (window as TestWindow).navigation = createNavigationMock(
-                'http://localhost/dashboard/settings'
-            );
+            restoreTestEnv?.();
+            restoreTestEnv = setupTestNavigation({
+                initialUrl: 'http://localhost/dashboard/settings',
+            });
             clearRouteCaches();
             const { result } = renderHook(() => useRoute({ section: '/dashboard' }));
             expect(result.current.pathname).toBe('/settings');
         });
 
         it('useRoute({ section: "/dashboard" }) returns pathname without section prefix', () => {
-            (window as TestWindow).navigation = createNavigationMock(
-                'http://localhost/dashboard/reports'
-            );
+            restoreTestEnv?.();
+            restoreTestEnv = setupTestNavigation({
+                initialUrl: 'http://localhost/dashboard/reports',
+            });
             clearRouteCaches();
 
             const { result } = renderHook(() => useRoute({ section: '/dashboard' }));
@@ -695,9 +690,10 @@ describe('useRoute', () => {
 
         it('global base + section: pathname and navigate use combined prefix', () => {
             configureRoute({ base: '/app' });
-            (window as TestWindow).navigation = createNavigationMock(
-                'http://localhost/app/dashboard/settings'
-            );
+            restoreTestEnv?.();
+            restoreTestEnv = setupTestNavigation({
+                initialUrl: 'http://localhost/app/dashboard/settings',
+            });
             clearRouteCaches();
 
             const { result } = renderHook(() => useRoute({ section: '/dashboard' }));

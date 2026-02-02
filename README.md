@@ -567,6 +567,33 @@ function Link({ to, replace = false, onClick, ...props }: LinkProps) {
 // <Link to="/users/123" replace>Профиль (replace)</Link>
 ```
 
+## 🧪 Тестирование
+
+Для unit‑тестов в jsdom‑окружении есть вспомогательный helper `setupTestNavigation` из entrypoint‑а `@budarin/use-route/testing`. Он настраивает `window.location` и `window.navigation` под указанный URL и возвращает функцию для отката.
+
+```ts
+import { beforeEach, afterEach, it, expect } from 'vitest';
+import { renderHook } from '@testing-library/react';
+import { useRoute } from '@budarin/use-route';
+import { setupTestNavigation } from '@budarin/use-route/testing';
+
+let restoreNavigation: () => void;
+
+beforeEach(() => {
+    restoreNavigation = setupTestNavigation({ initialUrl: 'http://localhost/users/123' });
+});
+
+afterEach(() => {
+    restoreNavigation();
+});
+
+it('читает pathname и params из Navigation API', () => {
+    const { result } = renderHook(() => useRoute('/users/:id'));
+    expect(result.current.pathname).toBe('/users/123');
+    expect(result.current.params).toEqual({ id: '123' });
+});
+```
+
 ## ⚙️ Установка
 
 ```bash

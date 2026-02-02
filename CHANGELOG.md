@@ -5,6 +5,12 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 версионирование — [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.4.6] - 2026-02-02
+
+### Добавлено
+
+- **testing-утилита:** `@budarin/use-route/testing` с функцией `setupTestNavigation({ initialUrl })` для простой настройки jsdom‑окружения в тестах (имитация Navigation API и URL для `useRoute`). Часть внутренних тестов переведена на использование этой утилиты.
+
 ## [1.4.5] - 2026-02-02
 
 ### Документация
