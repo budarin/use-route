@@ -437,6 +437,7 @@ function UserPostsExample() {
 
 ```tsx
 import { useRoute, configureRoute } from '@budarin/use-route';
+
 configureRoute({ base: '/app' });
 
 function AppUnderBase() {
