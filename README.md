@@ -618,17 +618,6 @@ TypeScript: типы включены.
 }
 ```
 
-**Polyfills (опционально):**
-
-```bash
-npm i urlpattern-polyfill
-```
-
-```typescript
-// src/polyfills.ts
-import 'urlpattern-polyfill';
-```
-
 ## ⚛️ React
 
 - Пакет рассчитан на **React 18+**: внутри используется `useSyncExternalStore` и поведение concurrent rendering, которые официально поддерживаются начиная с React 18.
