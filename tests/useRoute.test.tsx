@@ -38,46 +38,9 @@ interface TestWindow extends Window {
 }
 
 describe('useRoute', () => {
-    let originalWindow: typeof window;
     let restoreTestEnv: (() => void) | null = null;
 
-    // Helper для создания мока Navigation API (локально, для специфичных тестов)
-    function createNavigationMock(initialUrl: string = 'http://localhost/'): NavigationMock {
-        const entries: MockHistoryEntry[] = [
-            {
-                key: 'key0',
-                url: initialUrl,
-                getState: () => undefined,
-            },
-        ];
-
-        return {
-            currentEntry: entries[0],
-            entries: () => entries,
-            canGoBack: false,
-            canGoForward: false,
-            navigate: vi.fn().mockResolvedValue({
-                committed: Promise.resolve(),
-                finished: Promise.resolve(),
-            }),
-            back: vi.fn(),
-            forward: vi.fn(),
-            traverseTo: vi.fn(),
-            updateCurrentEntry: vi.fn((opts?: { state?: unknown }) => {
-                if (opts?.state !== undefined) {
-                    entries[0] = {
-                        ...entries[0],
-                        getState: () => opts.state,
-                    };
-                }
-            }),
-            addEventListener: vi.fn(),
-            removeEventListener: vi.fn(),
-        };
-    }
-
     beforeEach(() => {
-        originalWindow = window;
         restoreTestEnv = setupTestNavigation({ initialUrl: 'http://localhost/' });
     });
 
