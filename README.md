@@ -184,7 +184,7 @@ configureRoute({
 
 **`initialLocation`** — при SSR (нет `window`) хук не знает URL запроса. Задайте `initialLocation: request.url` (или полный URL страницы) один раз перед рендером запроса — тогда `pathname` и `searchParams` будут соответствовать запросу. На клиенте не используется. **По умолчанию задавать не нужно:** если на SSR `initialLocation` не задан, используется `'/'` (pathname и searchParams для корня).
 
-**`logger`** тип `Logger` — объект с методами `trace`, `debug`, `info`, `warn`, `error` (как у `console`). Уровни: `LoggerLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error'`. Если не передан — используется `console`.
+**`logger`** тип `Logger` — объект с методами `debug`, `info`, `warn`, `error`. Если не указан — используется `console`.
 
 **`pattern` (опционально):** строка-шаблон пути (нативный **URLPattern**) или функция **PathMatcher**. См. ниже.
 

@@ -93,10 +93,9 @@ export type UseRouteReturn<P extends string | PathMatcher | undefined = undefine
 };
 
 // Логгер для маршрутизации
-export type LoggerLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error';
+export type LoggerLevel = 'debug' | 'info' | 'warn' | 'error';
 
 export interface Logger {
-    trace(...args: unknown[]): void;
     debug(...args: unknown[]): void;
     info(...args: unknown[]): void;
     warn(...args: unknown[]): void;
