@@ -62,10 +62,10 @@ export interface NavigateOptions {
     history?: 'push' | 'replace' | 'auto';
     /** Состояние записи в истории (Navigation API): произвольные данные, связанные с этим переходом; можно прочитать из currentEntry.getState() после навигации. Передаётся в navigate и replace в одном поле options.state. */
     state?: unknown;
-    /** Full path prefix for this call. Overrides everything. '' or '/' = no prefix (e.g. other app). Otherwise this path is the prefix. Use for leaving app or explicit full path. */
-    base?: string;
-    /** Section override for this call. '' = app root (global base only, no section). '/path' = that section under global base. Ignored if base is set. */
-    section?: string;
+    /** Full path prefix for this call. Overrides everything. Any falsy value ('' | '/' | null | false | undefined when key is present) = no prefix (e.g. other app). Otherwise this path is the prefix. Use for leaving app or explicit full path. */
+    base?: string | null | false;
+    /** Section override for this call. Any falsy value ('' | null | false | undefined when key is present) = app root (global base only, no section). '/path' = that section under global base. Ignored if base is set. */
+    section?: string | null | false;
 }
 
 /** useRoute options: section (subtree under global base). pathname without section prefix; navigate(to) adds global base + section. */

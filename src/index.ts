@@ -352,11 +352,15 @@ function getNavigateForBase(effectiveBase: string | undefined) {
             let targetUrl = typeof to === 'string' ? to : to.toString();
             let baseForCall: string | undefined;
 
-            if (navOptions.base !== undefined) {
+            if ('base' in navOptions) {
+                const v = navOptions.base;
                 baseForCall =
-                    navOptions.base === '' || navOptions.base === '/' ? undefined : navOptions.base;
-            } else if (navOptions.section !== undefined) {
-                baseForCall = combineBases(getRouteConfig().base, navOptions.section);
+                    v === '/' || v === '' || v == null || v === false ? undefined : (v as string);
+            } else if ('section' in navOptions) {
+                const v = navOptions.section;
+                const sectionVal =
+                    v === '' || v === '/' || v == null || v === false ? '' : (v as string);
+                baseForCall = combineBases(getRouteConfig().base, sectionVal);
             } else {
                 baseForCall = effectiveBase;
             }

@@ -508,6 +508,37 @@ describe('useRoute', () => {
             delete (window as TestWindow).navigation;
         });
 
+        it('navigate(to, { base: null }) и { base: false } не добавляют префикс (как base: "")', async () => {
+            configureRoute({ base: '/app' });
+            const navigateSpy = vi.fn().mockResolvedValue({
+                committed: Promise.resolve(),
+                finished: Promise.resolve(),
+            });
+            (window as TestWindow).navigation = {
+                navigate: navigateSpy,
+                addEventListener: vi.fn(),
+                removeEventListener: vi.fn(),
+                currentEntry: { key: 'key0' },
+                entries: () => [{ key: 'key0' }],
+                canGoBack: false,
+                canGoForward: false,
+            };
+
+            const { result } = renderHook(() => useRoute());
+
+            await act(async () => {
+                await result.current.navigate('/login', { base: null });
+            });
+            expect(navigateSpy).toHaveBeenCalledWith('/login', expect.any(Object));
+
+            await act(async () => {
+                await result.current.navigate('/login', { base: false });
+            });
+            expect(navigateSpy).toHaveBeenCalledWith('/login', expect.any(Object));
+
+            delete (window as TestWindow).navigation;
+        });
+
         it('navigate(to, { base: "/auth" }) использует другой base для этого вызова', async () => {
             configureRoute({ base: '/app' });
             const navigateSpy = vi.fn().mockResolvedValue({
@@ -715,6 +746,43 @@ describe('useRoute', () => {
                 await result.current.navigate('/', { section: '' });
             });
 
+            expect(navigateSpy).toHaveBeenCalledWith('/app', expect.any(Object));
+
+            delete (window as TestWindow).navigation;
+            configureRoute({ base: undefined });
+        });
+
+        it('navigate(to, { section: null }), { section: false }, { section: undefined } идут в app root (как section: "")', async () => {
+            configureRoute({ base: '/app' });
+            const navigateSpy = vi.fn().mockResolvedValue({
+                committed: Promise.resolve(),
+                finished: Promise.resolve(),
+            });
+            (window as TestWindow).navigation = {
+                navigate: navigateSpy,
+                addEventListener: vi.fn(),
+                removeEventListener: vi.fn(),
+                currentEntry: { key: 'key0' },
+                entries: () => [{ key: 'key0' }],
+                canGoBack: false,
+                canGoForward: false,
+            };
+
+            const { result } = renderHook(() => useRoute({ section: '/dashboard' }));
+
+            await act(async () => {
+                await result.current.navigate('/', { section: null });
+            });
+            expect(navigateSpy).toHaveBeenCalledWith('/app', expect.any(Object));
+
+            await act(async () => {
+                await result.current.navigate('/', { section: false });
+            });
+            expect(navigateSpy).toHaveBeenCalledWith('/app', expect.any(Object));
+
+            await act(async () => {
+                await result.current.navigate('/', { section: undefined });
+            });
             expect(navigateSpy).toHaveBeenCalledWith('/app', expect.any(Object));
 
             delete (window as TestWindow).navigation;

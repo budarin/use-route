@@ -5,6 +5,17 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 версионирование — [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.4.18] - 2026-02-03
+
+### Изменено
+
+- **NavigateOptions:** для сброса base или section в одном вызове `navigate`/`replace` можно передать любое falsy-значение: `''`, `null`, `false` или `undefined` (при наличии ключа). Типы `base` и `section` расширены до `string | null | false`. Логика различает «ключ не передан» (используется effectiveBase) и «ключ передан с пустым значением» (сброс для этого вызова).
+- **README, JSDoc:** обновлено описание опций `base` и `section` в NavigateOptions.
+
+### Добавлено
+
+- **Тесты:** проверка сброса префикса через `base: null`, `base: false` и через `section: null`, `section: false`, `section: undefined`.
+
 ## [1.4.17] - 2026-02-03
 
 - **README:** правки текста.
