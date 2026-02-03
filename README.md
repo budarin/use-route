@@ -200,24 +200,34 @@ function App() {
     **Итог.** State в истории — опциональный инструмент для «передать что-то вместе с переходом», когда это улучшение, а не требование. Если сомневаетесь — можно не использовать; в большинстве приложений достаточно pathname, query и запросов к API.
 
 ### `configureRoute(config)`
+```typescript
+configureRoute({
+    urlCacheLimit?: number,
+    defaultHistory?: 'auto' | 'push' | 'replace',
+    logger?: Logger,
+    base?: '' | string,
+    initialLocation?: '' | string
+});
+```
 Глобальная настройка один раз при старте приложения**. Повторная инициализация не предусмотрена: вызывайте `configureRoute` только при старте; смена конфига в рантайме не поддерживается (внутренние кэши и состояние не сбрасываются).
 
 ```typescript
 configureRoute({
     urlCacheLimit: 50, // лимит LRU-кэша URL (по умолчанию 50)
     defaultHistory: 'replace', // history по умолчанию для всех navigate()
-    logger: myLogger, // логгер (дефолт: console)
     base: '/app', // базовый путь: pathname без base, navigate(to) добавляет base к относительным путям
+    logger: myLogger, // логгер (дефолт: console)
     initialLocation: request.url, // для SSR: начальный URL при рендере на сервере (нет window)
 });
 ```
 
-- *`base`* (глобальный) — нужен только когда **приложение располагается не в корне домена**, а по подпути. Пример: сайт `https://example.com/` — корень; ваше приложение отдаётся по `https://example.com/app/`, то есть все его маршруты физически лежат под путём `/app`. В этом случае задайте `base: '/app'`: `navigate('/dashboard')` переходит на `/app/dashboard`. Если приложение в корне домена (`https://example.com/`), глобальный `base` задавать не нужно — префикс не используется.
+- *`defaultHistory`* (по-умолчанию - `'auto'`) - глобально задает поведение записи истории при навигации при помощи методов `navigate` и `replace`
 
-- *`initialLocation`* — при SSR (нет `window`) хук не знает URL запроса. Задайте `initialLocation: request.url` (или полный URL страницы) один раз перед рендером запроса — тогда `pathname` и `searchParams` будут соответствовать запросу. На клиенте не используется. **По умолчанию задавать не нужно:** если на SSR `initialLocation` не задан, используется `'/'` (pathname и searchParams для корня).
+- *`base`* (по-умолчанию - `'/'`) — нужен только когда **приложение располагается не в корне домена**, а по подпути. Пример: сайт `https://example.com/` — корень; ваше приложение отдаётся по `https://example.com/app/`, то есть все его маршруты физически лежат под путём `/app`. В этом случае задайте `base: '/app'`: `navigate('/dashboard')` переходит на `/app/dashboard`. Если приложение в корне домена (`https://example.com/`), глобальный `base` задавать не нужно — префикс не используется.
 
-- *`logger`* тип `Logger` — объект с методами `debug`, `info`, `warn`, `error`. Если не указан — используется `console`.
+- *`logger`* (по-умолчанию - `console`) — объект с методами `debug`, `info`, `warn`, `error`. Если не указан — используется `console`.
 
+- *`initialLocation`* (по-умолчанию - `'/'`)  — при SSR (нет `window`) хук не знает URL запроса. Задайте `initialLocation: request.url` (или полный URL страницы) один раз перед рендером запроса — тогда `pathname` и `searchParams` будут соответствовать запросу. На клиенте не используется. **По умолчанию задавать не нужно:** если на SSR `initialLocation` не задан, используется `'/'` (pathname и searchParams для корня).
 
 
 ### `clearRouteCaches()`
