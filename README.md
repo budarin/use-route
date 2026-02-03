@@ -205,8 +205,8 @@ configureRoute({
     urlCacheLimit?: number,
     defaultHistory?: 'auto' | 'push' | 'replace',
     logger?: Logger,
-    base?: '' | string,
-    initialLocation?: '' | string
+    base?: string,
+    initialLocation?: string
 });
 ```
 Глобальная настройка один раз при старте приложения**. Повторная инициализация не предусмотрена: вызывайте `configureRoute` только при старте; смена конфига в рантайме не поддерживается (внутренние кэши и состояние не сбрасываются).
