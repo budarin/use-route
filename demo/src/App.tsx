@@ -92,7 +92,7 @@ function Nav() {
                 <Link
                     to={(section || '') + '/docs/getting-started'}
                     className={pathname.startsWith((section || '') + '/docs') ? 'active' : ''}
-                    title="patternOptions.ignoreCase — матч без учёта регистра"
+                    title="ignoreCase — матч pathname без учёта регистра"
                 >
                     IgnoreCase
                 </Link>

@@ -35,7 +35,7 @@ export function Home() {
                 </button>
                 <Link to="/products/books/1">Товары — свой разбор пути (PathMatcher)</Link>
                 <Link to="/docs/getting-started">
-                    IgnoreCase — матч pathname без учёта регистра (patternOptions)
+                    IgnoreCase — матч pathname без учёта регистра (ignoreCase)
                 </Link>
                 <Link to="/base-demo">Раздел (section)</Link>
             </div>

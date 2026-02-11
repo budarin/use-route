@@ -8,16 +8,16 @@ interface IgnoreCaseProps {
 
 export function IgnoreCase({ section = '' }: IgnoreCaseProps) {
     const { pathname, params, matched } = useRoute('/docs/:slug', {
-        patternOptions: { ignoreCase: true },
+        ignoreCase: true,
         ...(section !== undefined && { section }),
     });
 
     return (
         <div className="demo-content">
-            <h1>Матч без учёта регистра (patternOptions.ignoreCase)</h1>
+            <h1>Матч без учёта регистра (ignoreCase)</h1>
             <p className="demo-lead">
-                Хук вызван с шаблоном <code>/docs/:slug</code> и опцией{' '}
-                <code>patternOptions: &#123; ignoreCase: true &#125;</code>. Совпадение по регистру:
+                Хук вызван с шаблоном <code>/docs/:slug</code> и опцией <code>ignoreCase: true</code>.
+                Совпадение по регистру:
                 при любом написании сегмента (<code>/docs/Intro</code>, <code>/docs/intro</code>,{' '}
                 <code>/docs/INTRO</code>) шаблон совпадает — это и показывают ссылки ниже. В{' '}
                 <code>params.slug</code> попадает значение из URL «как есть».
