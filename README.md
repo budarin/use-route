@@ -2,7 +2,6 @@
 
 [Русская версия](https://github.com/budarin/use-route/blob/master/README.ru.md)
 
----
 
 ## Overview
 
@@ -16,7 +15,14 @@ It gives you:
 
 No providers, no context, no built‑in business logic – just a small, efficient hook.
 
-Badges and more documentation in Russian are available in `README.ru.md`.
+[![CI](https://github.com/budarin/use-route/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/budarin/use-route/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/@budarin/use-route?color=cb0000)](https://www.npmjs.com/package/@budarin/use-route)
+[![npm](https://img.shields.io/npm/dt/@budarin/use-route)](https://www.npmjs.com/package/@budarin/use-route)
+[![bundle](https://img.shields.io/bundlephobia/minzip/@budarin/use-route)](https://bundlephobia.com/result?p=@budarin/use-route)
+[![GitHub](https://img.shields.io/github/license/budarin/use-route)](https://github.com/budarin/use-route)
+
+**[▶  &nbsp;Demo StackBlitz](https://stackblitz.com/github/budarin/use-route/tree/master/demo)**&nbsp;&nbsp;
+**[▶  &nbsp;Demo CodeSandbox](https://codesandbox.io/p/sandbox/github/budarin/use-route/tree/master/demo)**
 
 ## When to use (and when not)
 
