@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [1.4.19] - 2026-02-11
+## [1.4.20] - 2026-02-11
 
 ### Documentation
 
@@ -164,4 +164,3 @@ Replace the following calls and imports in your code:
 - Hook `useRoute(options?)`: `pathname`, `searchParams`, `navigate`, `replace`, `back`, `forward`, `canGoBack`, `canGoForward`, `state`, and optional `pattern` with route params.
 - `configureRoute(options)`: global `base`, `logger`, `initialLocation` (SSR).
 - Integration with the Navigation API; legacy fallback for older environments.
-

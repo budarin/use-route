@@ -1,6 +1,6 @@
 @budarin/use-route
 
-Russian version: [README.ru.md](https://github.com/budarin/use-route/blob/master/README.ru.md)
+[Русская версия](https://github.com/budarin/use-route/blob/master/README.ru.md)
 
 ---
 
