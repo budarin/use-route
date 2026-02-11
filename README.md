@@ -1,4 +1,4 @@
-@budarin/use-route
+# @budarin/use-route
 
 [Русская версия](https://github.com/budarin/use-route/blob/master/README.ru.md)
 
