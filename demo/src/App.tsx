@@ -9,6 +9,7 @@ import { PushReplace } from './pages/PushReplace';
 import { State } from './pages/State';
 import { CustomMatcher } from './pages/CustomMatcher';
 import { BaseDemo } from './pages/BaseDemo';
+import { IgnoreCase } from './pages/IgnoreCase';
 
 function Nav() {
     const { pathname, searchParams, back, forward, canGoBack, canGoForward } = useRoute();
@@ -88,6 +89,13 @@ function Nav() {
                 >
                     Товары
                 </Link>
+                <Link
+                    to={(section || '') + '/docs/getting-started'}
+                    className={pathname.startsWith((section || '') + '/docs') ? 'active' : ''}
+                    title="patternOptions.ignoreCase — матч без учёта регистра"
+                >
+                    IgnoreCase
+                </Link>
                 {!section ? (
                     <Link
                         to="/base-demo"
@@ -113,6 +121,9 @@ function Nav() {
 function RouteView() {
     const { pathname } = useRoute();
 
+    if (pathname.startsWith('/base-demo/docs/')) {
+        return <IgnoreCase section="/base-demo" />;
+    }
     if (pathname.startsWith('/base-demo')) {
         return <BaseDemo />;
     }
@@ -139,6 +150,9 @@ function RouteView() {
     }
     if (pathname.startsWith('/products/')) {
         return <CustomMatcher />;
+    }
+    if (pathname.startsWith('/docs/')) {
+        return <IgnoreCase section="" />;
     }
 
     return (

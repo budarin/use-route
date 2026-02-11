@@ -34,6 +34,9 @@ export function Home() {
                     State — установка при навигации, чтение, updateState (черновик формы)
                 </button>
                 <Link to="/products/books/1">Товары — свой разбор пути (PathMatcher)</Link>
+                <Link to="/docs/getting-started">
+                    IgnoreCase — матч pathname без учёта регистра (patternOptions)
+                </Link>
                 <Link to="/base-demo">Раздел (section)</Link>
             </div>
         </div>
